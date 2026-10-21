@@ -1,0 +1,15 @@
+# CES data and derived files are governed by the dataset terms: do not commit
+*.csv
+*.npz
+*.zip
+*.parquet
+
+# training outputs
+runs/
+*.pt
+
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
