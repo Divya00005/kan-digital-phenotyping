@@ -86,3 +86,32 @@ not comparable to the paper's 0.731 (All of Us, Fitbit heart rate/HRV, clinical 
 ~40,000 people). Five-seed results will replace this table.
 
 Dataset citation: Nepal et al. (2024), *Capturing the College Experience*, Proc. ACM IMWUT 8(1), Article 38.
+
+## RQ1: forecasting future symptoms with KAN-ODE (in progress)
+
+| File | What it does |
+|---|---|
+| `forecast_prep.py` | Forecasting dataset: cutoff = survey day t0, 60 days of sensing before t0, targets = PHQ-2 / GAD-2 at t0 + 1, 2, 4, 8 weeks (closest survey within +/- 3 days, exact day offset kept). Also computes persistence and mean baselines |
+| `ode.py` | Fixed-step RK4 solver (1-day steps), backpropagation through the solver |
+| `forecast_model.py` | `KANODEForecaster`: encoder -> z(t0) -> dz/dt = KAN(z) -> heads at the target day. `NoODEForecaster`: same encoder and KAN sizes, horizon given as input, no integration (control) |
+| `test_ode.py` | Tests: RK4 vs exact solution and vs `torchdiffeq`, time indexing, gradients, small-batch fitting |
+
+```bash
+python forecast_prep.py --ema EMA/general_ema.csv --sensing Sensing/sensing.csv \
+    --demo Demographics/demographics.csv --split_from ces_kan_dataset.npz --out ces_forecast.npz
+python test_ode.py
+```
+
+Input versions: **A** = sensing only; **B** = sensing + symptom history known at t0
+(today's scores, 28-day mean, days since previous survey, number of recent surveys).
+
+### Persistence baseline (test students; future score = today's score)
+
+| Horizon | Depression MAE (mean / persistence) | Persistence AUROC | Onset rate | Onset AUC-PR |
+|---|---|---|---|---|
+| 1 week | 1.184 / 0.600 | 0.894 | 5.6% | 0.127 |
+| 2 weeks | 1.189 / 0.686 | 0.865 | 6.7% | 0.149 |
+| 4 weeks | 1.210 / 0.773 | 0.847 | 7.4% | 0.148 |
+| 8 weeks | 1.221 / 0.874 | 0.810 | 9.2% | 0.173 |
+
+Onset = currently below 3, at or above 3 at the horizon.
