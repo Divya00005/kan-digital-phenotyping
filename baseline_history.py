@@ -9,11 +9,18 @@ Only rows with a target are used for fitting. Out-of-fold predictions cover the 
 validation students once each; the test students are never used.
 
     python baseline_history.py --out runs/historyctl/baseline
+
+RQ3 (pre-registered in CLAUDE.md): the same linear model and a linear quantile regression
+(QuantileRegressor, alpha = 0, solver highs; 5 / 10 / 90 / 95% quantiles) on [H, S], fitted on the
+model students of each nested-CV role (rq3_students; no early stopping, so all model students),
+predicting the calibration and evaluation students (and the model students for the split role):
+    python baseline_history.py --rq3 --outers 0 1 2 3 4 --out_root runs/rq3
 """
-import argparse, os
+import argparse, json, os
 import numpy as np
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from train_forecast import cv_folds, CUTOFF
+from sklearn.linear_model import LinearRegression, LogisticRegression, QuantileRegressor
+from train_forecast import cv_folds, CUTOFF, RQ3_ROLES, rq3_rows
+from quantile_model import QUANTILES, N_Q, sort_quantiles
 
 
 def fit_predict(F_tr, score_tr, mask_tr, F_ho):
@@ -30,7 +37,53 @@ def fit_predict(F_tr, score_tr, mask_tr, F_ho):
     return out
 
 
+def fit_predict_quantile(F_tr, score_tr, mask_tr, F_out):
+    """Linear quantile regression per horizon, task and quantile -> (n_out, n_horizons, 8) in the
+    quantile-model layout (task-major, quantiles 5 / 10 / 90 / 95%), sorted so they never cross."""
+    n_h = score_tr.shape[1]
+    out = np.zeros((len(F_out), n_h, 2 * N_Q), np.float32)
+    for k in range(n_h):
+        m = mask_tr[:, k]
+        for t in range(2):
+            for i, q in enumerate(QUANTILES):
+                qr = QuantileRegressor(quantile=q, alpha=0.0, solver="highs").fit(F_tr[m], score_tr[m, k, t])
+                out[:, k, t * N_Q + i] = qr.predict(F_out)
+    return sort_quantiles(out)
+
+
+def rq3_main(a):
+    d = np.load(a.data)
+    uid, split = d["uid"], d["split"]
+    F = np.concatenate([d["H"], d["S"]], 1).astype(np.float64)
+    jobs = [("linear", k, r) for k in a.outers for r in a.roles]
+    jobs += [("linearq", k, r) for k in a.outers for r in a.quantile_roles]
+    for name, k, r in jobs:
+        out_dir = os.path.join(a.out_root, f"{name}_H_outer{k}_{r}")
+        if os.path.exists(os.path.join(out_dir, "results.json")) and not a.overwrite:
+            print(f"skip {out_dir}"); continue
+        parts = rq3_rows(uid, split, k, r)
+        assert (split[np.concatenate(list(parts.values()))] < 2).all(), "a test-set row would be used"
+        fit_rows = parts["model"]
+        save = ["model", "cal", "eval"] if r == "split" else ["cal", "eval"]
+        os.makedirs(out_dir, exist_ok=True)
+        all_rows = np.concatenate([parts[p] for p in save])
+        fn = fit_predict if name == "linear" else fit_predict_quantile
+        pred_all = fn(F[fit_rows], d["score"][fit_rows], d["mask"][fit_rows], F[all_rows])   # fitted once
+        start = 0
+        for part in save:
+            rows = parts[part]
+            np.savez(os.path.join(out_dir, f"pred_{part}.npz"), rows=rows, pred=pred_all[start:start + len(rows)],
+                     uid=uid[rows], date=d["date"][rows])
+            start += len(rows)
+        json.dump({"model": name, "version": "H", "outer": k, "role": r, "fit_rows": int(len(fit_rows)),
+                   "fit_students": int(len(np.unique(uid[fit_rows])))},
+                  open(os.path.join(out_dir, "results.json"), "w"), indent=2)
+        print(f"{out_dir}: fitted on {len(fit_rows)} rows ({len(np.unique(uid[fit_rows]))} students)", flush=True)
+
+
 def main(a):
+    if a.rq3:
+        return rq3_main(a)
     d = np.load(a.data)
     uid, split = d["uid"], d["split"]
     F = np.concatenate([d["H"], d["S"]], 1).astype(np.float64)
@@ -58,4 +111,10 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/ces_forecast.npz")
     p.add_argument("--out", default="runs/historyctl/baseline")
+    p.add_argument("--rq3", action="store_true", help="RQ3 nested-CV linear and quantile-linear fits")
+    p.add_argument("--outers", type=int, nargs="+", default=[0, 1, 2, 3, 4])
+    p.add_argument("--roles", nargs="+", choices=RQ3_ROLES, default=RQ3_ROLES)
+    p.add_argument("--quantile_roles", nargs="*", choices=RQ3_ROLES, default=["split"])
+    p.add_argument("--out_root", default="runs/rq3")
+    p.add_argument("--overwrite", action="store_true")
     main(p.parse_args())

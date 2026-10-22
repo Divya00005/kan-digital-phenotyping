@@ -15,6 +15,11 @@ Models (forecast_model.py):
   inputs set to zero; 5-fold CV by student on the train + validation students (test not used):
     python train_forecast.py --run_all --models noode --versions B H --folds 0 1 2 3 4 \\
         --seeds 0 1 2 3 4 --out_root runs/historyctl
+  RQ3 (pre-registered in CLAUDE.md): nested student-level CV on the train + validation students,
+  outer folds 0-4 x roles split / inner0-3 (rq3_students); saves pred_{model,cal,eval}.npz.
+  Version Hn = H without gender / race inputs; model noode_q = quantile outputs (pinball loss).
+    python train_forecast.py --run_all --models noode --versions H B --outers 0 1 2 3 4 \\
+        --roles split inner0 inner1 inner2 inner3 --seeds 0 --out_root runs/rq3
 Input versions:
     A = sensing + engineered + static features
     B = A + symptom history known at t0 (today's scores, 28-day means, survey timing)
@@ -34,12 +39,15 @@ import torch
 from sklearn.metrics import roc_auc_score
 from forecast_model import KANODEForecaster, NoODEForecaster, forecast_loss
 from odernn_model import ODERNNForecaster, GRUDtForecaster
+from quantile_model import QuantileNoODEForecaster, pinball_loss, sort_quantiles, quantile_val_metrics
 
 TASKS = ["depression", "anxiety"]
 CUTOFF = 3.0                    # screen-positive: subscore >= 3
 SCORE_RANGE = (0.0, 6.0)        # PHQ-2 / GAD-2 subscores are 0..6
 MODELS = {"ode": KANODEForecaster, "noode": NoODEForecaster,          # variant A
-          "odernn": ODERNNForecaster, "grudt": GRUDtForecaster}        # variant C (version B only)
+          "odernn": ODERNNForecaster, "grudt": GRUDtForecaster,        # variant C (version B only)
+          "noode_q": QuantileNoODEForecaster}                          # RQ3: quantiles for CQR
+VERSIONS = ["A", "B", "H", "Hn"]      # Hn = H without the gender / race inputs (RQ3 sensitivity)
 
 
 # ----------------------------------------------------------------------------- data
@@ -52,6 +60,10 @@ def load_data(path, device):
     data = {k: T(k) for k in keys}
     for k in ["score", "mask", "offset_days", "current", "uid", "date", "split", "horizons"]:
         data["np_" + k] = d[k]
+    names = [str(n) for n in d["static_names"]]
+    demo = np.array([n.startswith(("gender_", "race_")) for n in names])
+    assert demo.sum() == 9 and "ios_share" in names, names
+    data["S_keep"] = torch.from_numpy((~demo).astype(np.float32)).to(device)   # 0 = gender / race column
     split, uid = d["split"], d["uid"]
     tr, va, te = (set(uid[split == s]) for s in (0, 1, 2))
     assert not (tr & va or tr & te or va & te), "student appears in two splits"
@@ -60,18 +72,21 @@ def load_data(path, device):
 
 def build_model(name, version, data):
     X, E, S, H = data["X"], data["E"], data["S"], data["H"]
-    h_in = H.shape[1] if version in ("B", "H") else 0
+    h_in = H.shape[1] if version in ("B", "H", "Hn") else 0
     return MODELS[name](X.shape[2], E.shape[1], S.shape[1], h_in)
 
 
 def inputs(data, idx, version):
     """A = sensing only; B = sensing + history; H = history only: the version B model with the
-    sensing inputs X and E replaced by zeros (history-only control, pre-registered 2026-10-22)."""
-    x, e = data["X"][idx], data["E"][idx]
-    if version == "H":
+    sensing inputs X and E replaced by zeros (history-only control, pre-registered 2026-10-22);
+    Hn = H with the 9 gender / race columns of S also set to zero (RQ3 sensitivity check)."""
+    x, e, s = data["X"][idx], data["E"][idx], data["S"][idx]
+    if version in ("H", "Hn"):
         x, e = torch.zeros_like(x), torch.zeros_like(e)
-    h = data["H"][idx] if version in ("B", "H") else None
-    return x, e, data["S"][idx], h, data["offset_days"][idx]
+    if version == "Hn":
+        s = s * data["S_keep"]
+    h = data["H"][idx] if version in ("B", "H", "Hn") else None
+    return x, e, s, h, data["offset_days"][idx]
 
 
 # ----------------------------------------------------------------------------- cross-validation
@@ -96,6 +111,44 @@ def cv_rows(uid, split, fold, n_folds=N_FOLDS):
     return np.where(tv & ~held & ~stop)[0], np.where(stop)[0], np.where(held)[0]
 
 
+RQ3_ROLES = ["split", "inner0", "inner1", "inner2", "inner3"]
+
+
+def rq3_students(uid, split, outer, role):
+    """RQ3 nested student-level CV (pre-registered in CLAUDE.md). Outer fold `outer` of cv_folds =
+    evaluation students; the other 136 students:
+      split : shuffled with default_rng(3000 + k): first 68 = model students, last 68 = calibration;
+              7 model students (default_rng(3100 + k)) are held out for early stopping.
+      innerJ: shuffled with default_rng(1000 + k), cut into 4 inner folds of 34; inner fold J =
+              calibration (out-of-fold) students; the other 102 train, 10 of them
+              (default_rng(2000 + 10k + J)) held out for early stopping.
+    Returns student arrays: train, stop, cal, eval (the test set is never included)."""
+    parts = cv_folds(uid, split)
+    ev = np.sort(parts[outer])
+    rest = np.sort(np.concatenate([p for i, p in enumerate(parts) if i != outer]))
+    if role == "split":
+        perm = np.random.default_rng(3000 + outer).permutation(rest)
+        model, cal = np.sort(perm[:len(perm) // 2]), np.sort(perm[len(perm) // 2:])
+        stop = np.random.default_rng(3100 + outer).choice(model, int(round(ES_FRACTION * len(model))), replace=False)
+    elif role.startswith("inner"):
+        j = int(role[5:])
+        inner = np.array_split(np.random.default_rng(1000 + outer).permutation(rest), 4)
+        cal = np.sort(inner[j])
+        model = np.sort(np.concatenate([p for i, p in enumerate(inner) if i != j]))
+        stop = np.random.default_rng(2000 + 10 * outer + j).choice(model, int(round(ES_FRACTION * len(model))),
+                                                                 replace=False)
+    else:
+        raise ValueError(role)
+    train = np.setdiff1d(model, stop)
+    return {"train": train, "stop": np.sort(stop), "cal": cal, "eval": ev, "model": model}
+
+
+def rq3_rows(uid, split, outer, role):
+    """Row indices for each part of rq3_students (train + val rows only)."""
+    tv = split < 2
+    return {k: np.where(tv & np.isin(uid, s))[0] for k, s in rq3_students(uid, split, outer, role).items()}
+
+
 def forward(model, data, idx, version, residual=False):
     """Model outputs (n, n_horizons, 4): [dep score, anx score, dep logit, anx logit].
     residual (version B only): the score outputs are a CHANGE added to today's score
@@ -116,7 +169,8 @@ def predict(model, data, rows, version, residual=False, bs=1024):
     for i in range(0, len(rows), bs):
         idx = torch.as_tensor(rows[i:i + bs], device=data["X"].device)
         out.append(forward(model, data, idx, version, residual).float().cpu())
-    return torch.cat(out).numpy()
+    out = torch.cat(out).numpy()
+    return sort_quantiles(out) if getattr(model, "quantile", False) else out
 
 
 # ----------------------------------------------------------------------------- metrics
@@ -144,19 +198,30 @@ def persistence_mae(current, score, mask):
 
 
 # ----------------------------------------------------------------------------- training
-def train_one(a, model_name, version, seed, data, out_dir, fold=None):
+def train_one(a, model_name, version, seed, data, out_dir, fold=None, outer=None, role=None):
     if a.residual and version != "B":
         raise ValueError("--residual needs today's score, which only input version B has")
     if getattr(MODELS[model_name], "uses_surveys", False) and version != "B":
         raise ValueError("variant C models are pre-registered for input version B only")
+    quant = getattr(MODELS[model_name], "quantile", False)
+    if quant and (a.residual or a.select != "loss"):
+        raise ValueError("the quantile model uses the pinball loss for training and early stopping")
+    loss_fn = pinball_loss if quant else forecast_loss
     torch.manual_seed(seed); np.random.seed(seed); torch.cuda.manual_seed_all(seed)
     device = data["X"].device
     split = data["np_split"]
-    if fold is None:                                   # fixed split: train / validation students
+    parts = None
+    if outer is not None:                              # RQ3 nested CV: train / stop / cal / eval
+        parts = rq3_rows(data["np_uid"], split, outer, role)
+        tr, va, ho = parts["train"], parts["stop"], None
+        print(f"    RQ3 outer {outer} {role}: " + ", ".join(f"{k} {len(v)} rows" for k, v in parts.items()))
+    elif fold is None:                                 # fixed split: train / validation students
         tr, va, ho = np.where(split == 0)[0], np.where(split == 1)[0], None
     else:                                              # CV: train / early stopping / held-out fold
         tr, va, ho = cv_rows(data["np_uid"], split, fold)
         print(f"    fold {fold}: train {len(tr)} rows, early stopping {len(va)}, held out {len(ho)}")
+    used = [tr, va] + ([] if ho is None else [ho]) + ([] if parts is None else [parts["cal"], parts["eval"]])
+    assert (split[np.concatenate(used)] < 2).all(), "a test-set row would be used"
     sc_va, mk_va = data["np_score"][va], data["np_mask"][va]
     horizons = data["np_horizons"].tolist()
 
@@ -170,6 +235,9 @@ def train_one(a, model_name, version, seed, data, out_dir, fold=None):
           f"{persistence_mae(data['np_current'][va], sc_va, mk_va):.3f}")
 
     va_t = {k: data[k][torch.as_tensor(va, device=device)] for k in ["score", "mask"]}
+    metric_fn = quantile_val_metrics if quant else val_metrics
+    describe = (lambda vm: f"val raw 5-95% cover {vm['cover_90']:.3f} width {vm['width_90']:.2f}") if quant \
+        else (lambda vm: f"val MAE {vm['mean_mae']:.3f} | val AUROC {vm['mean_auroc']:.3f}")
     g = torch.Generator().manual_seed(seed)
     best, best_epoch, best_state, wait, history = float("inf"), 0, None, 0, []
     for epoch in range(1, a.epochs + 1):
@@ -180,8 +248,8 @@ def train_one(a, model_name, version, seed, data, out_dir, fold=None):
             batches = list(batches)[:a.max_batches]
         for i in batches:
             idx = torch.as_tensor(perm[i:i + a.batch], device=device)
-            loss = forecast_loss(forward(model, data, idx, version, a.residual),
-                                 data["score"][idx], data["mask"][idx])
+            loss = loss_fn(forward(model, data, idx, version, a.residual),
+                           data["score"][idx], data["mask"][idx])
             if not torch.isfinite(loss):
                 raise RuntimeError(f"loss became {loss.item()} at epoch {epoch} (ODE blew up?)")
             opt.zero_grad(); loss.backward()
@@ -191,15 +259,14 @@ def train_one(a, model_name, version, seed, data, out_dir, fold=None):
             total += loss.item() * len(idx); n_seen += len(idx)
 
         pv = predict(model, data, va, version, a.residual)
-        v_loss = forecast_loss(torch.from_numpy(pv).to(device), va_t["score"], va_t["mask"]).item()
-        vm = val_metrics(pv, sc_va, mk_va, horizons)
+        v_loss = loss_fn(torch.from_numpy(pv).to(device), va_t["score"], va_t["mask"]).item()
+        vm = metric_fn(pv, sc_va, mk_va, horizons)
         history.append({"epoch": epoch, "train_loss": total / n_seen, "val_loss": v_loss, **vm,
                         "seconds": time.time() - t0})
         crit = v_loss if a.select == "loss" else vm["mean_mae"]
         improved = crit < best
         print(f"epoch {epoch:3d} | train loss {total / n_seen:.4f} | val loss {v_loss:.4f} | "
-              f"val MAE {vm['mean_mae']:.3f} | val AUROC {vm['mean_auroc']:.3f} | "
-              f"{time.time() - t0:.0f}s{'  *' if improved else ''}", flush=True)
+              f"{describe(vm)} | {time.time() - t0:.0f}s{'  *' if improved else ''}", flush=True)
         if improved:
             best, best_epoch, wait = crit, epoch, 0
             best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
@@ -211,13 +278,15 @@ def train_one(a, model_name, version, seed, data, out_dir, fold=None):
                 break
 
     model.load_state_dict(best_state)
-    vm = val_metrics(best_pred, sc_va, mk_va, horizons)
-    res = {"model": model_name, "version": version, "seed": seed, "fold": fold, "n_params": n_params,
+    vm = metric_fn(best_pred, sc_va, mk_va, horizons)
+    res = {"model": model_name, "version": version, "seed": seed, "fold": fold, "outer": outer, "role": role,
+           "n_params": n_params,
            "best_epoch": best_epoch, "select_on": a.select, "best_val_criterion": best,
            "epochs_run": len(history), "val": vm,
            "val_persistence_mae": persistence_mae(data["np_current"][va], sc_va, mk_va),
            "settings": {k: v for k, v in vars(a).items()
-                        if k not in ("run_all", "seeds", "versions", "models", "folds", "fold")},
+                        if k not in ("run_all", "seeds", "versions", "models", "folds", "fold",
+                                     "outers", "roles", "outer", "role")},
            "torch": torch.__version__, "device": str(device)}
     os.makedirs(out_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(out_dir, "model.pt"))
@@ -230,9 +299,14 @@ def train_one(a, model_name, version, seed, data, out_dir, fold=None):
                  pred=predict(model, data, ho, version, a.residual), score=data["np_score"][ho],
                  mask=data["np_mask"][ho], current=data["np_current"][ho],
                  uid=data["np_uid"][ho], date=data["np_date"][ho])
+    if parts is not None:                              # RQ3: predictions for calibration / evaluation
+        for part in (["model", "cal", "eval"] if role == "split" else ["cal", "eval"]):
+            rows = parts[part]
+            np.savez(os.path.join(out_dir, f"pred_{part}.npz"), rows=rows,
+                     pred=predict(model, data, rows, version, a.residual),
+                     uid=data["np_uid"][rows], date=data["np_date"][rows])
     json.dump(res, open(os.path.join(out_dir, "results.json"), "w"), indent=2)   # written last = run complete
-    print(f"best epoch {best_epoch}: val MAE {vm['mean_mae']:.3f} (persistence {res['val_persistence_mae']:.3f}), "
-          f"val AUROC {vm['mean_auroc']:.3f} -> {out_dir}")
+    print(f"best epoch {best_epoch}: {describe(vm)} -> {out_dir}")
     return res
 
 
@@ -242,19 +316,25 @@ def main(a):
     data = load_data(a.data, device)
     folds = a.folds if a.run_all else [a.fold]
     folds = folds if folds is not None else [None]
-    if a.run_all:
-        jobs = [(m, v, s, f) for f in folds for s in a.seeds for v in a.versions for m in a.models]
+    if a.run_all and a.outers is not None:             # RQ3 nested CV
+        jobs = [(m, v, s, None, k, r) for k in a.outers for r in a.roles for s in a.seeds
+                for v in a.versions for m in a.models]
+    elif a.run_all:
+        jobs = [(m, v, s, f, None, None) for f in folds for s in a.seeds for v in a.versions for m in a.models]
     else:
-        jobs = [(a.model, a.version, a.seed, a.fold)]
+        jobs = [(a.model, a.version, a.seed, a.fold, a.outer, a.role if a.outer is not None else None)]
     t_start = time.time()
-    for n, (m, v, s, f) in enumerate(jobs, 1):
-        name = f"{m}_{v}_seed{s}" if f is None else f"{m}_{v}_fold{f}_seed{s}"
+    for n, (m, v, s, f, k, r) in enumerate(jobs, 1):
+        if k is not None:
+            name = f"{m}_{v}_outer{k}_{r}_seed{s}"
+        else:
+            name = f"{m}_{v}_seed{s}" if f is None else f"{m}_{v}_fold{f}_seed{s}"
         out_dir = os.path.join(a.out_root, name)
         if os.path.exists(os.path.join(out_dir, "results.json")) and not a.overwrite:
             print(f"[{n}/{len(jobs)}] skip {out_dir} (finished already; --overwrite to redo)")
             continue
         print(f"[{n}/{len(jobs)}] elapsed {(time.time() - t_start) / 60:.0f} min")
-        train_one(a, m, v, s, data, out_dir, fold=f)
+        train_one(a, m, v, s, data, out_dir, fold=f, outer=k, role=r)
     print(f"\nall done in {(time.time() - t_start) / 60:.1f} min")
 
 
@@ -262,13 +342,17 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/ces_forecast.npz")
     p.add_argument("--model", choices=list(MODELS), default="ode")
-    p.add_argument("--version", choices=["A", "B", "H"], default="B")
+    p.add_argument("--version", choices=VERSIONS, default="B")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--fold", type=int, default=None, help="CV fold 0-4 (history-only control)")
+    p.add_argument("--outer", type=int, default=None, help="RQ3 outer fold 0-4")
+    p.add_argument("--role", choices=RQ3_ROLES, default="split", help="RQ3: split model or inner fold")
     p.add_argument("--run_all", action="store_true", help="every model x version for each of --seeds")
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
     p.add_argument("--folds", type=int, nargs="+", default=None, help="for --run_all: CV folds")
-    p.add_argument("--versions", nargs="+", choices=["A", "B", "H"], default=["A", "B"], help="for --run_all")
+    p.add_argument("--outers", type=int, nargs="+", default=None, help="for --run_all: RQ3 outer folds")
+    p.add_argument("--roles", nargs="+", choices=RQ3_ROLES, default=RQ3_ROLES, help="for --run_all: RQ3 roles")
+    p.add_argument("--versions", nargs="+", choices=VERSIONS, default=["A", "B"], help="for --run_all")
     p.add_argument("--models", nargs="+", choices=list(MODELS), default=["noode", "ode"],
                    help="for --run_all (variant C: --models grudt odernn --versions B)")
     p.add_argument("--residual", action="store_true",
