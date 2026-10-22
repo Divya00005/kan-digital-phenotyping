@@ -54,12 +54,24 @@ Audit rules (already implemented in `data_prep.py`):
    (`runs/TEST_SET_USED.json`); evaluating any new model on it is a second use and must be agreed
    with the student first.
 
+4. **RQ1 variant C, trained and tested** (2026-10-22; pre-registration below): `odernn_model.py`,
+   `test_odernn.py` (all pass), past-survey arrays in `forecast_prep.py` (old arrays unchanged),
+   variant C options in `train_forecast.py` / `evaluate_forecast.py`. lr 1e-3 chosen on validation.
+   **Test result: ODE-RNN helps = NO.** ODE-RNN vs GRU-Δt differs by at most 0.003 MAE at every
+   horizon; neither beats persistence (worse at 1 week, tied 2-8 weeks); ranking gains over
+   persistence (AUROC 7/8, onset AUC-PR 8/8) are the same as variant A. **RQ1 conclusion so far:
+   in CES an ODE did not help, after the encoder (A) or inside it (C).** The test set has now been
+   used **twice** (`runs/TEST_SET_USED.json`, `runs/TEST_SET_USED_variantC.json`); any further
+   test use must be agreed with the student and reported as such.
+
 ## Environment (this laptop)
 - Drive C: is almost full: keep everything on D:. Project: `D:\projects\kan-digital-phenotyping`.
 - Python 3.11 venv in `.venv` (torch 2.11 + CUDA 12.8, RTX 4050 6 GB). Before pip or long runs set
   TEMP, TMP and PIP_CACHE_DIR to `D:\tmp`; install with `pip install --no-cache-dir`.
 - Run `data_prep.py` / `forecast_prep.py` from `data/` (outputs `data/*.npz`). One KAN-ODE epoch
-  is ~2-2.5 min on the GPU (batch 512); the no-ODE model ~7 s.
+  is ~2-2.5 min on the GPU (batch 512); the no-ODE model ~7 s; ODE-RNN ~45 s; GRU-Δt ~4 s.
+- Long runs: launch in the background and keep the session open; `--run_all` skips finished runs,
+  so an interrupted job can simply be started again (same seed = same result).
 
 ## RQ1 plan (agreed)
 - Models: persistence, KAN no-ODE (control), **KAN-ODE variant A** (encoder -> z(t0) ->
@@ -122,8 +134,14 @@ amendment below with the reason.
 6 test evaluation once + README / CLAUDE.md update.
 
 **Amendments:** none.
+**Process notes:** the NaN fix was not needed. The step-5 training job was cut off when a session
+ended (ODE-RNN seed 2 at epoch 10, nothing saved); it was restarted and only unfinished runs were
+trained. Test evaluated once on 2026-10-22 11:25.
 
 ## Next step
-Variant C, step 2: add the past-survey arrays to `forecast_prep.py` (pre-registration above).
-Ask the student before starting. Not chosen yet: a symptom-history-only control; RQ2 / RQ3.
+Not decided yet. Options to discuss with the student (ask before starting any):
+- A **symptom-history-only** control, to tell whether the ranking gain over persistence comes from
+  phone sensing or from the history features (validation only, unless a third test use is agreed).
+- Move on to **RQ2** (factors associated with future worsening) or **RQ3** (conformal intervals),
+  probably with the variant A version B no-ODE model (simplest, as good as any other).
 Work in major steps and stop after each one for approval, unless the student approves a block.

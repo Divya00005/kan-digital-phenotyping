@@ -12,6 +12,10 @@ Cutoff t0 = a PHQ-4 survey day ("today the student filled in a survey").
 Also computes the persistence baseline ("future score = today's score") and the
 mean-score baseline on the test students.
 
+Variant C (pre-registered 2026-10-22) also needs the past surveys as a sequence:
+  surv_scores (N, 61, 2): PHQ-2 and GAD-2 / 6 on day k = t0-60+k (k = 60 is t0 itself), else 0
+  surv_mask   (N, 61)   : True on the days with a survey. Only surveys on or before t0.
+
 Usage:
     python forecast_prep.py --ema general_ema.csv --sensing sensing.csv \
         --demo demographics.csv --split_from ces_kan_dataset.npz --out ces_forecast.npz
@@ -38,6 +42,19 @@ def history_features(lab_dates, lab_dep, lab_anx, i):
     gap = (t0 - prev[-1]).astype(int) if len(prev) else 60
     return [lab_dep[i], lab_anx[i], lab_dep[past].mean(), lab_anx[past].mean(),
             min(gap, 60), past.sum()]
+
+
+def survey_sequence(lab_dates, lab_dep, lab_anx, i, window):
+    """Past surveys of cutoff i on a daily grid: day k = t0 - window + k, k = 0 .. window (t0).
+    Scores divided by 6 (the subscore maximum). Nothing after t0 is used."""
+    t0 = lab_dates[i]
+    seq = np.zeros((window + 1, 2), np.float32)
+    msk = np.zeros(window + 1, bool)
+    k = (lab_dates - (t0 - np.timedelta64(window, "D"))).astype(int)
+    ok = (k >= 0) & (lab_dates <= t0)
+    seq[k[ok]] = np.stack([lab_dep[ok], lab_anx[ok]], 1) / 6.0
+    msk[k[ok]] = True
+    return seq, msk
 
 
 def targets(lab_dates, lab_dep, lab_anx, i):
@@ -91,6 +108,7 @@ def main(a):
     by_uid = {u: g.set_index("date").sort_index() for u, g in sens.groupby("uid")}
     by_uid_raw = {u: g.set_index("date").sort_index() for u, g in sens_raw.groupby("uid")}
     X, M, E, PL, HIST, TGT, UID, DATE = [], [], [], [], [], [], [], []
+    SURV, SMASK = [], []
 
     for u, lab in labels.sort_values("date").groupby("uid"):
         if u not in by_uid or u not in split_of:
@@ -120,10 +138,13 @@ def main(a):
             E.append(engineered(featraw[sl], val[sl], wd))
             PL.append(np.nanmean(ios[sl]) if np.any(~np.isnan(ios[sl])) else np.nan)
             HIST.append(history_features(ld, ldep, lanx, i))
+            sq, sm = survey_sequence(ld, ldep, lanx, i, WINDOW)
+            SURV.append(sq); SMASK.append(sm)
             TGT.append(tg); UID.append(u); DATE.append(ld[i])
 
     X, M, E = np.stack(X), np.stack(M), np.stack(E)
     HIST, TGT = np.array(HIST, np.float32), np.stack(TGT)
+    SURV, SMASK = np.stack(SURV), np.stack(SMASK)
     UID, DATE = np.array(UID), np.array(DATE)
     split = np.array([split_of[u] for u in UID], np.int8)
     tr = split == 0
@@ -172,6 +193,7 @@ def main(a):
         a.out, X=Xz, E=Ez, S=S, H=Hz, score=np.nan_to_num(score).astype(np.float32),
         mask=mask, offset_days=np.nan_to_num(offset_days).astype(np.float32),
         current=cur, uid=UID, date=DATE.astype(str), split=split,
+        surv_scores=SURV, surv_mask=SMASK,
         horizons=np.array(HORIZONS_WEEKS), hist_names=np.array(HIST_NAMES),
         daily_names=np.array(DAILY + ["valid_mask"]), eng_names=np.array(engineered_names()),
         static_names=np.array(list(stat.columns) + ["ios_share"]),

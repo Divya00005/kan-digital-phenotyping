@@ -8,8 +8,9 @@ clinical diagnostic system.
 1. Re-implementation of **Interpretable-MTLNet** (Ali, Ni & Kundur, NeurIPS 2025 workshop)
    aligned to the College Experience Study (CES) dataset. Detection setting, same as the paper:
    predict current depression / anxiety screen status from the 60 days of phone sensing before a survey.
-2. **RQ1, forecasting with KAN-ODE** (variant A): future symptoms 1, 2, 4 and 8 weeks ahead.
-   Test-set results below (negative for the ODE).
+2. **RQ1, forecasting with KAN-ODE**: future symptoms 1, 2, 4 and 8 weeks ahead. Two ODE designs
+   tested (variant A: ODE after the encoder; variant C: ODE-RNN encoder). Test-set results below:
+   negative for the ODE in both.
 
 Later stages (factor analysis, conformal prediction) build on these models.
 
@@ -103,12 +104,14 @@ better than persistence, but the ODE added nothing to that.
 
 | File | What it does |
 |---|---|
-| `forecast_prep.py` | Forecasting dataset: cutoff = survey day t0, 60 days of sensing before t0, targets = PHQ-2 / GAD-2 at t0 + 1, 2, 4, 8 weeks (closest survey within +/- 3 days, exact day offset kept). Also computes persistence and mean baselines |
+| `forecast_prep.py` | Forecasting dataset: cutoff = survey day t0, 60 days of sensing before t0, targets = PHQ-2 / GAD-2 at t0 + 1, 2, 4, 8 weeks (closest survey within +/- 3 days, exact day offset kept). Also computes persistence and mean baselines, and the past-survey sequence used by variant C |
 | `ode.py` | Fixed-step RK4 solver (1-day steps), backpropagation through the solver |
 | `forecast_model.py` | `KANODEForecaster`: encoder -> z(t0) -> dz/dt = KAN(z) -> heads at the target day. `NoODEForecaster`: same encoder and KAN sizes, horizon given as input, no integration (control) |
 | `test_ode.py` | Tests: RK4 vs exact solution and vs `torchdiffeq`, time indexing, gradients, small-batch fitting |
 | `train_forecast.py` | Trains one model (`--model {ode,noode} --version {A,B} --seed N`) or all of them (`--run_all --seeds ...`) on the GPU; uses training and validation students only; saves the best-epoch model and validation predictions |
-| `evaluate_forecast.py` | RQ1 table: mean score, persistence, no-ODE and KAN-ODE per horizon; student-level bootstrap CIs, paired CIs for differences, the decision rule. Validation by default; `--split test --final` works once (lock file) |
+| `evaluate_forecast.py` | RQ1 table: mean score, persistence, no-ODE and KAN-ODE per horizon; student-level bootstrap CIs, paired CIs for differences, the decision rule. Validation by default; `--split test --final` works once (lock file). `--control` / `--treatment` / `--ref_runs` for variant C |
+| `odernn_model.py` | Variant C: `ODERNNForecaster` (KAN ODE-RNN encoder) and the `GRUDtForecaster` control |
+| `test_odernn.py` | Tests: missing days ignored, zero dynamics = plain GRU, empty walk = pure ODE, exact time gaps, batch independence, gradients, small-batch fitting |
 
 ```bash
 python forecast_prep.py --ema EMA/general_ema.csv --sensing Sensing/sensing.csv \
@@ -213,5 +216,61 @@ due to the ODE. Full tables with CIs: `runs/final/eval_test/rq1_table.md` (not i
   phone sensing rather than to the history features.
 - Only 22 validation students: model selection was noisy (validation CIs about +/- 0.15 MAE).
 - Scores are screening scores (PHQ-2 / GAD-2), not diagnoses; surveys are irregular (about every 5 days).
-- Only KAN-ODE variant A was tested. The agreed plan names variant C (KAN ODE-RNN encoder,
-  Rubanova et al. 2019) as the next step when variant A shows no ODE benefit.
+- Variant C (below) was designed after these results were known.
+
+## RQ1 variant C: ODE inside the encoder (KAN ODE-RNN)
+
+**Question:** variant A put the ODE after the encoder. Does an ODE **inside** the encoder help,
+reading the 61 days before t0 as an irregular time series (missing sensing days, surveys about
+every 5 days)? Pre-registered in `CLAUDE.md` and committed (44538b5) before any variant C code.
+
+**Answer on the test set: no.** KAN ODE-RNN and its GRU-Δt control are practically identical
+(differences at most 0.003 MAE); neither beats persistence, and both are slightly worse than the
+variant A models in point estimates (variant A is a reference row only, no paired test).
+
+- **KAN ODE-RNN** (Rubanova et al. 2019): hidden state h (32) walks day by day; between days
+  dh/dt = KAN(h) (one RK4 step per day); a GRU update on each valid sensing day and on each survey
+  day; no update on missing days.
+- **GRU-Δt control:** the same GRU updates on the same days, no ODE; the time since the previous
+  update is an extra input; the same-sized KAN block applied once at the end. Parameter counts
+  90,428 vs 90,620 (+0.2%).
+- Both: input version B plus the past-survey sequence (PHQ-2 / GAD-2 on each survey day in
+  t0-60 .. t0); the no-ODE head of variant A. Same training recipe as variant A.
+- **Learning rate** chosen on validation (seed 0) from {1e-3, 3e-4}: 1e-3 (mean val MAE 0.714 vs 0.732).
+- Seeds 0-4, predictions averaged. Same metrics, bootstrap and decision rule as variant A.
+- **Second use of the test set** (2026-10-22, lock `runs/TEST_SET_USED_variantC.json`).
+
+```bash
+python test_odernn.py
+python train_forecast.py --run_all --models grudt odernn --versions B --seeds 0 1 2 3 4 \
+    --lr 1e-3 --out_root runs/variantC/final
+python evaluate_forecast.py --control grudt --treatment odernn --versions B \
+    --runs runs/variantC/final --ref_runs runs/final --ref_models noode ode \
+    --split test --final --seeds 0 1 2 3 4 --lock runs/TEST_SET_USED_variantC.json   # once
+```
+
+**Results (test students; MAE averaged over depression and anxiety, [95% CI])**
+
+| Horizon | Persistence | Variant A KAN-ODE (ref) | GRU-Δt | KAN ODE-RNN | ODE-RNN - GRU-Δt |
+|---|---|---|---|---|---|
+| 1 week | **0.633** | 0.739 | 0.763 [0.649, 0.910] | 0.766 [0.648, 0.922] | +0.003 [-0.007, 0.015] |
+| 2 weeks | **0.715** | 0.785 | 0.805 [0.687, 0.947] | 0.805 [0.684, 0.957] | +0.000 [-0.009, 0.012] |
+| 4 weeks | **0.805** | 0.864 | 0.880 [0.750, 1.028] | 0.880 [0.745, 1.037] | -0.000 [-0.010, 0.012] |
+| 8 weeks | **0.917** | 0.946 | 0.962 [0.816, 1.115] | 0.961 [0.809, 1.122] | -0.001 [-0.011, 0.012] |
+
+Decision rule: better at no horizon -> **ODE-RNN helps: NO**. Both models are worse than
+persistence at 1 week (CI excludes zero) and not different from it at 2-8 weeks.
+
+**Secondary metrics:** both models beat persistence on screen-positive AUROC (7 of 8 horizon-task
+pairs) and onset AUC-PR (8 of 8), at the same level as variant A (e.g. 1 week onset AUC-PR about
+0.23-0.25 vs persistence 0.12). Of 16 secondary ODE-RNN vs GRU-Δt comparisons, 2 have a CI
+excluding zero, both slightly in favour of the control (anxiety onset AUC-PR at 1 and 4 weeks,
+-0.010); with this many comparisons that is consistent with chance.
+
+**What this means for RQ1:** in CES, with these designs, an ODE does not improve forecasts of
+PHQ-2 / GAD-2, whether it acts after the encoder (variant A) or inside it (variant C). Reading
+the survey history as a time series did not beat the six summary history features either.
+
+**Limitations (in addition to those of variant A):** the test set had already been used once
+for variant A, and variant C was designed knowing that result (reported here, not hidden);
+validation selection used only 22 students; variant C was tested for input version B only.

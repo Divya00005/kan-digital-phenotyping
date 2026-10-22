@@ -20,6 +20,12 @@ Persistence = "future score = today's score"; today's score is also its ranking 
 Test-set protection: --split test needs --final and every run (2 models x 2 versions x seeds)
 finished. It then writes runs/TEST_SET_USED.json; a second test evaluation is refused.
 Baselines: persistence (today's score) and mean score (training students' average future score).
+
+Variant C (pre-registered in CLAUDE.md): the same rule with another model pair, plus variant A
+reference rows (their saved predictions; not part of the decision), and its own lock:
+    python evaluate_forecast.py --control grudt --treatment odernn --versions B \\
+        --runs runs/variantC/final --ref_runs runs/final --ref_models noode ode
+    ... --split test --final --seeds 0 1 2 3 4 --lock runs/TEST_SET_USED_variantC.json   # ONCE
 """
 import argparse, datetime, json, os, sys
 import numpy as np
@@ -28,11 +34,24 @@ import torch
 TASKS = ["depression", "anxiety"]
 CUTOFF = 3.0
 SCORE_RANGE = (0.0, 6.0)
-MODELS = ["noode", "ode"]
-METHODS = ["mean", "persistence", "noode", "ode"]
-LABEL = {"mean": "Mean score", "persistence": "Persistence", "noode": "KAN no-ODE", "ode": "KAN-ODE"}
-PAIRS = [("ode", "noode"), ("ode", "persistence"), ("noode", "persistence"), ("ode", "mean"), ("noode", "mean")]
+LABEL = {"mean": "Mean score", "persistence": "Persistence", "noode": "KAN no-ODE", "ode": "KAN-ODE",
+         "grudt": "GRU-Δt", "odernn": "KAN ODE-RNN",
+         "ref_noode": "Variant A no-ODE (ref)", "ref_ode": "Variant A KAN-ODE (ref)"}
 VERSION_NAME = {"A": "sensing only", "B": "sensing + symptom history known at t0"}
+DEFAULT_LOCK = "runs/TEST_SET_USED.json"
+
+
+def configure(control="noode", treatment="ode", refs=()):
+    """Which model pair the decision rule compares (treatment - control), plus reference rows."""
+    global CTRL, TREAT, MODELS, METHODS, PAIRS
+    CTRL, TREAT = control, treatment
+    MODELS = [control, treatment]
+    METHODS = ["mean", "persistence", *[f"ref_{r}" for r in refs], control, treatment]
+    PAIRS = [(treatment, control), (treatment, "persistence"), (control, "persistence"),
+             (treatment, "mean"), (control, "mean")]
+
+
+configure()                                                       # variant A by default
 
 
 # ----------------------------------------------------------------------------- weighted metrics
@@ -148,9 +167,9 @@ def bootstrap(preds, truth, horizons, n_boot, seed):
 
 
 def decision(res, horizons):
-    """Pre-registered rule on the PRIMARY metric (MAE avg): ODE helps if the paired CI of
-    ODE - noODE is entirely below 0 at >= 2 horizons."""
-    d = res["diff"]["ode-noode"]
+    """Pre-registered rule on the PRIMARY metric (MAE avg): the treatment (ODE) helps if the paired
+    CI of treatment - control is entirely below 0 at >= 2 horizons."""
+    d = res["diff"][f"{TREAT}-{CTRL}"]
     better = [h for h in horizons if d[f"{h}w_mae_avg"]["ci"][1] < 0]
     worse = [h for h in horizons if d[f"{h}w_mae_avg"]["ci"][0] > 0]
     return {"ode_better_at_weeks": better, "ode_worse_at_weeks": worse, "ode_helps": len(better) >= 2}
@@ -170,7 +189,7 @@ def found_seeds(root, v):
     seeds = set()
     if os.path.isdir(root):
         for name in os.listdir(root):
-            if name.startswith(f"ode_{v}_seed"):
+            if name.startswith(f"{TREAT}_{v}_seed"):
                 s = int(name.rsplit("seed", 1)[1])
                 if all(finished(root, m, v, s) for m in MODELS):
                     seeds.add(s)
@@ -210,6 +229,24 @@ def load_test(root, v, seeds, data_path, device):
     return {m: np.stack(p) for m, p in preds.items()}, truth
 
 
+def load_refs(ref_root, ref_models, v, seeds, split, truth):
+    """Reference rows: SAVED predictions of earlier models (no new model is run on any split)."""
+    out = {}
+    fname = "val_predictions.npz" if split == "val" else "test_predictions.npz"
+    for m in ref_models:
+        P = []
+        for s in seeds:
+            path = os.path.join(run_dir(ref_root, m, v, s), fname)
+            if not os.path.exists(path):
+                sys.exit(f"reference predictions missing: {path}")
+            f = np.load(path)
+            assert np.array_equal(f["uid"], truth["uid"]) and np.array_equal(f["date"], truth["date"]), \
+                f"{path}: rows differ from the evaluated models"
+            P.append(f["pred"])
+        out[f"ref_{m}"] = np.stack(P)
+    return out
+
+
 def per_seed(model_preds, truth, horizons, train_mean):
     """Spread over seeds of the primary metric (each seed scored on its own, no bootstrap)."""
     out = {}
@@ -245,25 +282,29 @@ def report(all_res, split, horizons):
         L += [f"## Version {v}: {VERSION_NAME[v]}  (seeds {R['seeds']}, predictions averaged over seeds)", "",
               "**Primary metric: MAE of the future score, averaged over depression and anxiety "
               "(lower is better).** 95% CI from a student-level bootstrap.", "",
-              "| Horizon | n (students) | Mean score | Persistence | KAN no-ODE | KAN-ODE | KAN-ODE − no-ODE |",
-              "|---|---|---|---|---|---|---|"]
+              "| Horizon | n (students) | " + " | ".join(LABEL[m] for m in METHODS)
+              + f" | {LABEL[TREAT]} − {LABEL[CTRL]} |",
+              "|---|---|" + "---|" * (len(METHODS) + 1)]
+        tc = f"{TREAT}-{CTRL}"
         for h in horizons:
             k = f"{h}w_mae_avg"
             L.append(f"| {h} week{'s' if h > 1 else ''} | {cnt[f'{h}w']['n']} ({cnt[f'{h}w']['students']}) | "
                      + " | ".join(fmt(P[m][k], C[m][k]) for m in METHODS)
-                     + f" | {fmt(D['ode-noode'][k]['point'], D['ode-noode'][k]['ci'])} |")
+                     + f" | {fmt(D[tc][k]['point'], D[tc][k]['ci'])} |")
         dec = R["decision"]
-        L += ["", f"**Decision rule** (ODE helps if the ODE − no-ODE CI is entirely below 0 at ≥ 2 horizons): "
-              f"better at weeks {dec['ode_better_at_weeks'] or 'none'}, worse at weeks "
-              f"{dec['ode_worse_at_weeks'] or 'none'} → **ODE helps: {'YES' if dec['ode_helps'] else 'NO'}**"
+        L += ["", f"**Decision rule** ({LABEL[TREAT]} helps if the {LABEL[TREAT]} − {LABEL[CTRL]} CI is "
+              f"entirely below 0 at ≥ 2 horizons): better at weeks {dec['ode_better_at_weeks'] or 'none'}, "
+              f"worse at weeks {dec['ode_worse_at_weeks'] or 'none'} → "
+              f"**{LABEL[TREAT]} helps: {'YES' if dec['ode_helps'] else 'NO'}**"
               + (" (validation only, not the RQ1 answer)" if split == "val" else ""), "",
               "Each model vs the baselines (MAE avg, negative = model better than the baseline):", "",
-              "| Horizon | no-ODE − persistence | KAN-ODE − persistence | no-ODE − mean | KAN-ODE − mean |",
+              "| Horizon | " + " | ".join(f"{LABEL[m]} − {LABEL[b]}" for b in ["persistence", "mean"]
+                                        for m in MODELS) + " |",
               "|---|---|---|---|---|"]
         for h in horizons:
             k = f"{h}w_mae_avg"
-            L.append(f"| {h}w | " + " | ".join(fmt(D[p][k]['point'], D[p][k]['ci']) for p in
-                     ["noode-persistence", "ode-persistence", "noode-mean", "ode-mean"]) + " |")
+            L.append(f"| {h}w | " + " | ".join(fmt(D[f'{m}-{b}'][k]['point'], D[f'{m}-{b}'][k]['ci'])
+                                              for b in ["persistence", "mean"] for m in MODELS) + " |")
         L += ["", "Secondary metrics (point estimate [95% CI]); classification = screen-positive (score ≥ 3), "
               "onset = currently < 3:", "",
               "| Horizon | Task | Method | MAE | AUROC | AUC-PR | Onset AUROC | Onset AUC-PR |",
@@ -279,7 +320,7 @@ def report(all_res, split, horizons):
                                  for x in ["mae", "auroc", "auprc", "onset_auroc", "onset_auprc"]) + " |")
         if len(R["seeds"]) > 1:
             L += ["", "Spread over seeds (MAE avg, each seed on its own: mean ± SD):", "",
-                  "| Horizon | KAN no-ODE | KAN-ODE |", "|---|---|---|"]
+                  "| Horizon | " + " | ".join(LABEL[m] for m in MODELS) + " |", "|---|---|---|"]
             for h in horizons:
                 k = f"{h}w_mae_avg"
                 L.append(f"| {h}w | " + " | ".join(
@@ -303,6 +344,9 @@ def check_persistence(res, baseline_path, horizons):
 # ----------------------------------------------------------------------------- main
 def main(a):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")     # Windows console: allow − ≥ →
+    configure(a.control, a.treatment, a.ref_models if a.ref_runs else ())
+    if (a.control, a.treatment) != ("noode", "ode") and a.split == "test" and a.lock == DEFAULT_LOCK:
+        sys.exit("Refused: a new model pair needs its own --lock file (see CLAUDE.md pre-registration).")
     d = np.load(a.data)
     horizons = d["horizons"].tolist()
     tr = d["split"] == 0
@@ -330,14 +374,15 @@ def main(a):
     for v in a.versions:
         seeds = a.seeds or found_seeds(a.runs, v)
         if not seeds:
-            print(f"version {v}: no finished ode+noode pair in {a.runs}, skipped")
+            print(f"version {v}: no finished {TREAT}+{CTRL} pair in {a.runs}, skipped")
             continue
         missing = [run_dir(a.runs, m, v, s) for m in MODELS for s in seeds if not finished(a.runs, m, v, s)]
         if missing:
             sys.exit("Unfinished runs:\n  " + "\n  ".join(missing))
         model_preds, truth = (load_val(a.runs, v, seeds) if a.split == "val"
                               else load_test(a.runs, v, seeds, a.data, device))
-        preds = method_preds(model_preds, truth["current"], len(horizons), train_mean)
+        refs = load_refs(a.ref_runs, a.ref_models, v, seeds, a.split, truth) if a.ref_runs else {}
+        preds = method_preds({**refs, **model_preds}, truth["current"], len(horizons), train_mean)
         print(f"version {v}: seeds {seeds}, {len(truth['uid'])} rows, "
               f"{len(np.unique(truth['uid']))} students, {a.n_boot} bootstrap resamples ...", flush=True)
         res = bootstrap(preds, truth, horizons, a.n_boot, a.boot_seed)
@@ -372,7 +417,11 @@ if __name__ == "__main__":
     p.add_argument("--n_boot", type=int, default=1000)
     p.add_argument("--boot_seed", type=int, default=0)
     p.add_argument("--baselines", default="baselines_test.json")
-    p.add_argument("--lock", default="runs/TEST_SET_USED.json",
+    p.add_argument("--control", default="noode", help="decision rule: treatment - control")
+    p.add_argument("--treatment", default="ode")
+    p.add_argument("--ref_runs", default=None, help="folder with earlier models shown as reference rows")
+    p.add_argument("--ref_models", nargs="+", default=["noode", "ode"])
+    p.add_argument("--lock", default=DEFAULT_LOCK,
                    help="one lock for the whole project: the test set is evaluated once, whatever --runs is")
     p.add_argument("--out", default=None)
     main(p.parse_args())

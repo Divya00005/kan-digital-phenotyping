@@ -7,6 +7,10 @@ RQ1 step 3: train one forecasting model (KAN-ODE or the no-ODE control) on ces_f
 Models (forecast_model.py):
     ode   = KANODEForecaster: encoder -> z(t0) -> dz/dt = KAN(z) -> heads at the target day
     noode = NoODEForecaster:  same encoder and KAN sizes, horizon given as input, no integration
+  variant C (odernn_model.py, version B only, pre-registered in CLAUDE.md):
+    odernn = ODERNNForecaster: ODE-RNN encoder (dh/dt = KAN(h) between days, GRU updates)
+    grudt  = GRUDtForecaster:  GRU-delta-t control (no ODE), same no-ODE head
+    python train_forecast.py --run_all --models grudt odernn --versions B --seeds 0
 Input versions:
     A = sensing + engineered + static features
     B = A + symptom history known at t0 (today's scores, 28-day means, survey timing)
@@ -25,11 +29,13 @@ import numpy as np
 import torch
 from sklearn.metrics import roc_auc_score
 from forecast_model import KANODEForecaster, NoODEForecaster, forecast_loss
+from odernn_model import ODERNNForecaster, GRUDtForecaster
 
 TASKS = ["depression", "anxiety"]
 CUTOFF = 3.0                    # screen-positive: subscore >= 3
 SCORE_RANGE = (0.0, 6.0)        # PHQ-2 / GAD-2 subscores are 0..6
-MODELS = {"ode": KANODEForecaster, "noode": NoODEForecaster}
+MODELS = {"ode": KANODEForecaster, "noode": NoODEForecaster,          # variant A
+          "odernn": ODERNNForecaster, "grudt": GRUDtForecaster}        # variant C (version B only)
 
 
 # ----------------------------------------------------------------------------- data
@@ -37,7 +43,9 @@ def load_data(path, device):
     """Load ces_forecast.npz. Model inputs go to `device`; labels stay as numpy."""
     d = np.load(path, allow_pickle=False)
     T = lambda k: torch.from_numpy(d[k]).to(device)
-    data = {k: T(k) for k in ["X", "E", "S", "H", "score", "mask", "offset_days", "current"]}
+    keys = ["X", "E", "S", "H", "score", "mask", "offset_days", "current"]
+    keys += [k for k in ["surv_scores", "surv_mask"] if k in d.files]       # variant C inputs
+    data = {k: T(k) for k in keys}
     for k in ["score", "mask", "offset_days", "current", "uid", "date", "split", "horizons"]:
         data["np_" + k] = d[k]
     split, uid = d["split"], d["uid"]
@@ -61,7 +69,10 @@ def forward(model, data, idx, version, residual=False):
     """Model outputs (n, n_horizons, 4): [dep score, anx score, dep logit, anx logit].
     residual (version B only): the score outputs are a CHANGE added to today's score
     (known at t0), so the model starts from persistence and learns corrections."""
-    out = model(*inputs(data, idx, version))
+    if getattr(model, "uses_surveys", False):                            # variant C
+        out = model(*inputs(data, idx, version), data["surv_scores"][idx], data["surv_mask"][idx])
+    else:
+        out = model(*inputs(data, idx, version))
     if residual:
         out = torch.cat([out[..., :2] + data["current"][idx].unsqueeze(1), out[..., 2:]], dim=-1)
     return out
@@ -105,6 +116,8 @@ def persistence_mae(current, score, mask):
 def train_one(a, model_name, version, seed, data, out_dir):
     if a.residual and version != "B":
         raise ValueError("--residual needs today's score, which only input version B has")
+    if getattr(MODELS[model_name], "uses_surveys", False) and version != "B":
+        raise ValueError("variant C models are pre-registered for input version B only")
     torch.manual_seed(seed); np.random.seed(seed); torch.cuda.manual_seed_all(seed)
     device = data["X"].device
     split = data["np_split"]
@@ -168,7 +181,7 @@ def train_one(a, model_name, version, seed, data, out_dir):
            "best_epoch": best_epoch, "select_on": a.select, "best_val_criterion": best,
            "epochs_run": len(history), "val": vm,
            "val_persistence_mae": persistence_mae(data["np_current"][va], sc_va, mk_va),
-           "settings": {k: v for k, v in vars(a).items() if k not in ("run_all", "seeds", "versions")},
+           "settings": {k: v for k, v in vars(a).items() if k not in ("run_all", "seeds", "versions", "models")},
            "torch": torch.__version__, "device": str(device)}
     os.makedirs(out_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(out_dir, "model.pt"))
@@ -187,7 +200,7 @@ def main(a):
     torch.backends.cudnn.benchmark = False
     data = load_data(a.data, device)
     if a.run_all:
-        jobs = [(m, v, s) for s in a.seeds for v in a.versions for m in ("noode", "ode")]
+        jobs = [(m, v, s) for s in a.seeds for v in a.versions for m in a.models]
     else:
         jobs = [(a.model, a.version, a.seed)]
     t_start = time.time()
@@ -210,6 +223,8 @@ if __name__ == "__main__":
     p.add_argument("--run_all", action="store_true", help="every model x version for each of --seeds")
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
     p.add_argument("--versions", nargs="+", choices=["A", "B"], default=["A", "B"], help="for --run_all")
+    p.add_argument("--models", nargs="+", choices=list(MODELS), default=["noode", "ode"],
+                   help="for --run_all (variant C: --models grudt odernn --versions B)")
     p.add_argument("--residual", action="store_true",
                    help="version B: predict the change from today's score instead of the score")
     p.add_argument("--epochs", type=int, default=100)
