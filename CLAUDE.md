@@ -138,10 +138,56 @@ amendment below with the reason.
 ended (ODE-RNN seed 2 at epoch 10, nothing saved); it was restarted and only unfinished runs were
 trained. Test evaluated once on 2026-10-22 11:25.
 
+## History-only control: pre-registration (agreed with the student 2026-10-22, before any code)
+Question: version B models rank screen-positive / onset risk better than persistence. Does that
+gain come from **phone sensing**, or only from the **symptom-history** features? Predictive
+(associational) question only; no causal claim.
+
+**Students:** the 170 train + validation students of `data/ces_forecast.npz` (22,699 cutoffs).
+The test set (43 students) is **not used**: no model predicts split 2 in this experiment.
+
+**Folds:** 5-fold cross-validation by student. Folds = `numpy.random.default_rng(0).permutation`
+of the sorted 170 student IDs, cut into 5 near-equal parts (34 each). In each fold, the other
+136 students train; 10% of them (14, chosen with `default_rng(100 + fold)`) are held out for
+early stopping only. Every student is predicted once, by models that never saw them.
+
+**Models** (variant A `NoODEForecaster`, identical architecture and parameter count):
+- *Version B:* sensing `X`, `E` + history `H` + static `S`.
+- *Version H:* the same, but `X` and `E` replaced by zeros (all channels, incl. the valid-day
+  mask) in training and prediction. `H` and `S` unchanged (`S` = gender, race group and
+  `ios_share`, i.e. device platform, not behaviour).
+- *Simple baseline (reference):* per horizon and task, on [`H`, `S`] of the fold's training
+  students: `LinearRegression` for the score (clipped 0-6) and `LogisticRegression` (C = 1.0,
+  max_iter 1000) for screen-positive (>= 3). Rows with a target only.
+
+**Training (no tuning):** variant A final version-B settings: AdamW lr 1e-3, weight decay 1e-4,
+batch 512, gradient clipping 1.0, max 100 epochs, early stopping on the early-stopping students'
+loss (patience 10), `forecast_loss`. Seeds 0-4 for every fold and version (50 runs). If any run
+gives NaN: stop and ask the student.
+
+**Predictions:** per student, average over the 5 seeds; pool the out-of-fold predictions of all
+5 folds (170 students). Persistence and mean-score rows as before (mean = training-fold mean).
+
+**Primary metric:** screen-positive **AUROC averaged over depression and anxiety**, per horizon.
+**Decision rule:** "sensing adds ranking information" only if the 95% paired student-bootstrap CI
+(1,000 resamples, seed 0) of AUROC(B) - AUROC(H) lies entirely **above zero** at **>= 2 of the 4
+horizons**. Otherwise the result is "no evidence that sensing adds ranking information" (not
+"sensing has no information").
+**Secondary (reported, not decisive):** onset AUC-PR, AUC-PR, MAE (all per task and averaged);
+B, H and the simple baseline vs persistence; B and H vs the simple baseline; spread over folds and seeds.
+
+**Known caveat (reported, not fixed):** `ces_forecast.npz` was normalised with the original 149
+training students, so some held-out students' inputs were part of those means / SDs (inputs only,
+no labels; same for B and H).
+
+**Major steps (stop after each for approval):** 1 this pre-registration; 2 code + tests
+(`--version H`, fold split, simple baseline; tests: version H output unchanged when `X` / `E`
+change, folds student-disjoint and complete, no split-2 rows); 3 runs (50 KAN runs + baseline);
+4 evaluation table, decision rule, README / CLAUDE.md update.
+
+**Amendments:** none.
+
 ## Next step
-Not decided yet. Options to discuss with the student (ask before starting any):
-- A **symptom-history-only** control, to tell whether the ranking gain over persistence comes from
-  phone sensing or from the history features (validation only, unless a third test use is agreed).
-- Move on to **RQ2** (factors associated with future worsening) or **RQ3** (conformal intervals),
-  probably with the variant A version B no-ODE model (simplest, as good as any other).
+History-only control, step 2: code and tests (pre-registration above). Ask the student before
+starting. Not chosen yet: RQ2 / RQ3.
 Work in major steps and stop after each one for approval, unless the student approves a block.
