@@ -295,7 +295,19 @@ code + tests (folds disjoint and complete, no test rows, Hn ignores demographics
 4 training runs (4 KAN models x 5 outer folds x (1 split + 4 inner) = 100 runs, about 2-3 h, plus
 linear models); 5 evaluation and tables; 6 README / CLAUDE.md update.
 
-**Amendments:** none.
+**Amendments** (agreed with the student 2026-10-23, before any RQ3 training run; no results seen):
+1. *Run list:* only the runs used by the pre-registered methods are trained: split role for KAN
+   H, B, Hn and the quantile KAN (20 runs); inner folds for KAN H and B only (40 runs), since CV+ is
+   applied to the point models persistence, linear, H and B. Hn and the quantile KAN are evaluated
+   with the split-model methods only. Linear: all roles; quantile-linear: split role.
+2. *KAN-ODE added:* `KANODEForecaster` (variant A) on input version **H**, split role only (5 runs),
+   same recipe and seed 0. Evaluated with every method that uses the split model (B main, single
+   subsample, A, pooled CDF, per-group, joint); no CV+ (no inner runs). Added comparison: KAN-ODE H
+   vs KAN no-ODE H (coverage and width, paired). KAN-ODE on version B and CV+ for KAN-ODE: not done.
+3. *Implementation details fixed now:* a fresh `default_rng(4000 + k)` for every model x task x
+   horizon x target x calibration group, so results do not depend on run order; B + CV+ width =
+   mean over subsamples of the clipped CV+ interval width; bootstrap keeps the intervals fixed
+   (resampling the evaluation students only).
 
 ## Next step
 RQ3, step 2: `conformal.py` and `test_conformal.py` on synthetic data (pre-registration above).
