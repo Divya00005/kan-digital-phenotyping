@@ -199,13 +199,106 @@ change, folds student-disjoint and complete, no split-2 rows); 3 runs (50 KAN ru
 `evaluate_forecast.compute` gained task-averaged keys (`*_auroc_avg`, `*_auprc_avg`,
 `*_onset_auprc_avg`); all existing RQ1 numbers were checked unchanged (2,567 of 2,567).
 
+## RQ3: pre-registration (agreed with the student 2026-10-22, before any RQ3 code)
+**Question:** can conformal prediction give reliable prediction intervals for future PHQ-2
+(depression) and GAD-2 (anxiety) scores at 1, 2, 4 and 8 weeks, overall and within gender and
+race groups? Papers (local `papers/`, not in git): Lei et al. 2018 (split conformal), Dunn,
+Wasserman & Ramdas 2023 (two-layer hierarchical), Barber et al. 2021 (jackknife+ / CV+), Romano,
+Patterson & Candès 2019 (CQR), Romano, Barber, Sabatti & Candès 2020 (equalized coverage),
+Stankeviciute, Alaa & van der Schaar 2021 (conformal time-series forecasting).
+
+**Data and test set.** The 170 train + validation students of `data/ces_forecast.npz` only.
+**The test set is not used** (already used twice); no model predicts split 2; code asserts this.
+Inputs keep the existing normalisation (caveat as in the history control).
+
+**Nested student-level cross-validation.**
+- *Outer folds:* the history-control folds (`cv_folds`, 5 x 34 students). Outer fold k = the
+  evaluation students; everything else for that round uses only the other 136 students.
+- *Split for the main method:* the 136 students, shuffled with `default_rng(3000 + k)`, are cut
+  into 68 model students and 68 calibration students (Lei et al.: equal split). The split model
+  trains on the 68 model students (7 of them, `default_rng(3100 + k)`, held out for early stopping).
+- *Inner folds for CV+:* the same 136 students, shuffled with `default_rng(1000 + k)`, cut into
+  4 inner folds of 34. Inner model j trains on the other 3 inner folds (102 students; 10 held out
+  for early stopping, `default_rng(2000 + 10k + j)`) and predicts inner fold j and outer fold k.
+- Evaluation students are never in any training, early-stopping or calibration set of their round.
+
+**Models (point predictors; one seed, seed 0).**
+- *Persistence:* future score = today's score (no training).
+- *Linear history model:* `LinearRegression` on [H, S] per horizon and task (as `baseline_history.py`).
+- *KAN no-ODE version H* (history; sensing inputs zero) and *KAN no-ODE version B* (sensing +
+  history): `NoODEForecaster`, the history-control training recipe (AdamW lr 1e-3, weight decay
+  1e-4, batch 512, clipping 1.0, early stopping on loss, patience 10, max 100 epochs).
+- *Sensitivity model: version H without demographics ("Hn"):* as H, but the 9 gender / race
+  columns of S set to zero (`ios_share` kept).
+- *Quantile models for CQR:* (i) a KAN no-ODE version H with quantile outputs at 5 / 95% and
+  10 / 90% per horizon and task, trained with the pinball loss only, same recipe, early stopping
+  on pinball loss; (ii) linear quantile regression (`QuantileRegressor`, alpha = 0, solver highs)
+  on [H, S], same quantiles.
+- **KAN-ODE is not included now.** The code reads point predictions per model by name, so
+  KAN-ODE can be added later by training its nested runs, without changing the methods.
+
+**Methods** (alpha = 0.10 main, 0.20 also; score values are integers 0-6, so every set is a set
+of integers, reported as [lowest, highest] and as the number of score values it contains;
+intervals clipped to [0, 6]; **no randomised tie-breaking**: over-coverage is reported).
+- **B (MAIN): student-level repeated subsampling** (Dunn et al., repeated subsampling, split
+  version). Per horizon and task, B = 200 subsamples (`default_rng(4000 + k)`); in each, one
+  cutoff drawn uniformly per calibration student among their cutoffs with a target. Score
+  s = |y - y_hat| (CQR: s = max(q_lo - y, y - q_hi)). p_b(y) = (1 + #{c : s_c >= s(y)}) / (m + 1)
+  over the m calibration students; set = {y in 0..6 : mean_b p_b(y) > alpha}.
+  **Formal guarantee:** for a new student from the same population and a cutoff chosen uniformly
+  at random from that student's cutoffs, P(true score in set) >= 1 - 2 alpha (in practice expected
+  near 1 - alpha). Also reported for reference: a single subsample (exact >= 1 - alpha).
+- **A (reference): survey-level split conformal** (Lei et al. Algorithm 2) on all calibration
+  cutoffs, k-th smallest residual with k = ceil((n + 1)(1 - alpha)). No valid new-student guarantee
+  (cutoffs of one student are not exchangeable); shown to see what ignoring students does.
+- **Pooled-CDF comparison** (Dunn et al. Method 1): each calibration student's residual CDF
+  weighted equally; asymptotic only (assumes continuous outcomes, which ours are not).
+- **B + CV+ (empirical comparison only):** CV+ intervals (Barber et al. eq. 11) from the 4 inner
+  models, one cutoff per calibration student per subsample, final set = score values inside the
+  CV+ interval for at least half of the 200 subsamples. **This combination is not covered by
+  either paper's theorem.** For one subsample, CV+'s own bound with n = 136 students and K = 4 is
+  1 - 2 alpha - min{2(1 - 1/K)/(n/K + 1), (1 - K/n)/(K + 1)} = 1 - 2 alpha - 0.043,
+  i.e. >= 0.757 at alpha = 0.10 and >= 0.557 at alpha = 0.20.
+- **CQR:** method B with the CQR score on the two quantile models.
+- **Pooled vs per-group (Mondrian) calibration** (Romano et al. 2020): per-group = calibration
+  scores of the same group only, two separate partitions: gender (female, male) and race (White,
+  Asian). Pooled calibration never guarantees coverage within a group. Black (8 students),
+  Hispanic / other (6), multiracial / native (9 in these 170), race unknown (1), gender "both" (1)
+  and gender unknown (1): pooled analysis only, coverage shown as "too small to conclude".
+  If a group has too few calibration students for a non-trivial set, the set is all of 0..6;
+  the number of such cases is reported.
+- **Joint coverage over horizons** (Stankeviciute et al.): Bonferroni, each horizon at alpha / 4;
+  a cutoff is jointly covered if every horizon with a target is covered. Also reported on the
+  12,106 cutoffs that have all 4 horizons. **Extra, clearly labelled, not from these papers:**
+  max-normalised joint score max_h |y_h - y_hat_h| / s_h, with s_h = the split model's MAE at
+  horizon h on its own model students.
+
+**Evaluation** (per method x model x task x horizon, and joint; 170 evaluation students pooled
+over the 5 outer folds): coverage averaged over students (primary; matches the guarantee) and
+over cutoffs; coverage minus target; mean interval width; mean number of score values;
+per group: coverage, width, number of values, students and cutoffs; gaps female - male and
+White - Asian. 95% CIs from 1,000 student-level bootstrap resamples (seed 0); gaps and model
+differences paired within each resample. Model comparisons: width of H vs persistence, B vs H,
+H vs linear, Hn vs H, at the same method and target.
+**Pre-registered flags:** *under-coverage* = the CI of coverage lies entirely below the target;
+*group gap* = the paired CI of a gap excludes zero. "Reliable" (method B) = no under-coverage flag
+overall (pooled calibration) and none within female, male, White, Asian under per-group
+calibration. Results are reported whatever they show.
+
+**Files (new unless noted):** `conformal.py` (methods, numpy only), `test_conformal.py`,
+`quantile_model.py`, `train_forecast.py` (nested-fold options, version Hn, quantile model),
+`rq3_conformal.py` (intervals, evaluation, tables). Outputs in `runs/rq3/` (not in git).
+
+**Major steps (stop after each for approval):** 1 this pre-registration + `papers/` in
+`.gitignore`; 2 `conformal.py` + `test_conformal.py` on synthetic data only; 3 nested training
+code + tests (folds disjoint and complete, no test rows, Hn ignores demographics, pinball loss);
+4 training runs (4 KAN models x 5 outer folds x (1 split + 4 inner) = 100 runs, about 2-3 h, plus
+linear models); 5 evaluation and tables; 6 README / CLAUDE.md update.
+
+**Amendments:** none.
+
 ## Next step
-Not decided yet; plan **RQ3** (conformal prediction intervals; coverage overall and by gender /
-race) next, as discussed with the student. Points to settle in its plan:
-- Which model: the history-control results show history-only models (KAN version H or the
-  linear / logistic baseline) are as good as or better than version B.
-- Calibration and coverage data: the CV out-of-fold predictions (170 students) are available;
-  the test set has been used twice, so a third use must be agreed and pre-registered, or the
-  coverage evaluation stays inside cross-validation.
-- RQ2 (behavioural factors) is still open; note that sensing showed no predictive value beyond history.
+RQ3, step 2: `conformal.py` and `test_conformal.py` on synthetic data (pre-registration above).
+Ask the student before starting. Later decision: whether to add KAN-ODE to RQ3 after the KAN
+results. RQ2 is still open.
 Work in major steps and stop after each one for approval, unless the student approves a block.

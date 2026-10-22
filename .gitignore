@@ -4,6 +4,9 @@
 *.zip
 *.parquet
 
+# reference papers (copyrighted PDFs, kept locally only)
+papers/
+
 # training outputs
 runs/
 *.pt
