@@ -11,6 +11,10 @@ Models (forecast_model.py):
     odernn = ODERNNForecaster: ODE-RNN encoder (dh/dt = KAN(h) between days, GRU updates)
     grudt  = GRUDtForecaster:  GRU-delta-t control (no ODE), same no-ODE head
     python train_forecast.py --run_all --models grudt odernn --versions B --seeds 0
+  history-only control (pre-registered in CLAUDE.md): version H = version B with the sensing
+  inputs set to zero; 5-fold CV by student on the train + validation students (test not used):
+    python train_forecast.py --run_all --models noode --versions B H --folds 0 1 2 3 4 \\
+        --seeds 0 1 2 3 4 --out_root runs/historyctl
 Input versions:
     A = sensing + engineered + static features
     B = A + symptom history known at t0 (today's scores, 28-day means, survey timing)
@@ -56,13 +60,40 @@ def load_data(path, device):
 
 def build_model(name, version, data):
     X, E, S, H = data["X"], data["E"], data["S"], data["H"]
-    h_in = H.shape[1] if version == "B" else 0
+    h_in = H.shape[1] if version in ("B", "H") else 0
     return MODELS[name](X.shape[2], E.shape[1], S.shape[1], h_in)
 
 
 def inputs(data, idx, version):
-    h = data["H"][idx] if version == "B" else None
-    return data["X"][idx], data["E"][idx], data["S"][idx], h, data["offset_days"][idx]
+    """A = sensing only; B = sensing + history; H = history only: the version B model with the
+    sensing inputs X and E replaced by zeros (history-only control, pre-registered 2026-10-22)."""
+    x, e = data["X"][idx], data["E"][idx]
+    if version == "H":
+        x, e = torch.zeros_like(x), torch.zeros_like(e)
+    h = data["H"][idx] if version in ("B", "H") else None
+    return x, e, data["S"][idx], h, data["offset_days"][idx]
+
+
+# ----------------------------------------------------------------------------- cross-validation
+N_FOLDS, ES_FRACTION = 5, 0.1
+
+
+def cv_folds(uid, split, n_folds=N_FOLDS):
+    """History-only control (pre-registered): the train + validation students, sorted, shuffled with
+    default_rng(0), cut into n_folds near-equal parts. Test students (split 2) are never included."""
+    students = np.sort(np.unique(uid[split < 2]))
+    return np.array_split(np.random.default_rng(0).permutation(students), n_folds)
+
+
+def cv_rows(uid, split, fold, n_folds=N_FOLDS):
+    """Row indices (train, early stopping, held out) for one fold. Early-stopping students = 10% of
+    the other folds' students, drawn with default_rng(100 + fold)."""
+    parts = cv_folds(uid, split, n_folds)
+    rest = np.sort(np.concatenate([p for i, p in enumerate(parts) if i != fold]))
+    es = np.random.default_rng(100 + fold).choice(rest, int(round(ES_FRACTION * len(rest))), replace=False)
+    tv = split < 2
+    held, stop = tv & np.isin(uid, parts[fold]), tv & np.isin(uid, es)
+    return np.where(tv & ~held & ~stop)[0], np.where(stop)[0], np.where(held)[0]
 
 
 def forward(model, data, idx, version, residual=False):
@@ -113,7 +144,7 @@ def persistence_mae(current, score, mask):
 
 
 # ----------------------------------------------------------------------------- training
-def train_one(a, model_name, version, seed, data, out_dir):
+def train_one(a, model_name, version, seed, data, out_dir, fold=None):
     if a.residual and version != "B":
         raise ValueError("--residual needs today's score, which only input version B has")
     if getattr(MODELS[model_name], "uses_surveys", False) and version != "B":
@@ -121,7 +152,11 @@ def train_one(a, model_name, version, seed, data, out_dir):
     torch.manual_seed(seed); np.random.seed(seed); torch.cuda.manual_seed_all(seed)
     device = data["X"].device
     split = data["np_split"]
-    tr, va = np.where(split == 0)[0], np.where(split == 1)[0]
+    if fold is None:                                   # fixed split: train / validation students
+        tr, va, ho = np.where(split == 0)[0], np.where(split == 1)[0], None
+    else:                                              # CV: train / early stopping / held-out fold
+        tr, va, ho = cv_rows(data["np_uid"], split, fold)
+        print(f"    fold {fold}: train {len(tr)} rows, early stopping {len(va)}, held out {len(ho)}")
     sc_va, mk_va = data["np_score"][va], data["np_mask"][va]
     horizons = data["np_horizons"].tolist()
 
@@ -177,11 +212,12 @@ def train_one(a, model_name, version, seed, data, out_dir):
 
     model.load_state_dict(best_state)
     vm = val_metrics(best_pred, sc_va, mk_va, horizons)
-    res = {"model": model_name, "version": version, "seed": seed, "n_params": n_params,
+    res = {"model": model_name, "version": version, "seed": seed, "fold": fold, "n_params": n_params,
            "best_epoch": best_epoch, "select_on": a.select, "best_val_criterion": best,
            "epochs_run": len(history), "val": vm,
            "val_persistence_mae": persistence_mae(data["np_current"][va], sc_va, mk_va),
-           "settings": {k: v for k, v in vars(a).items() if k not in ("run_all", "seeds", "versions", "models")},
+           "settings": {k: v for k, v in vars(a).items()
+                        if k not in ("run_all", "seeds", "versions", "models", "folds", "fold")},
            "torch": torch.__version__, "device": str(device)}
     os.makedirs(out_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(out_dir, "model.pt"))
@@ -189,6 +225,11 @@ def train_one(a, model_name, version, seed, data, out_dir):
     np.savez(os.path.join(out_dir, "val_predictions.npz"), pred=best_pred, score=sc_va, mask=mk_va,
              offset_days=data["np_offset_days"][va], current=data["np_current"][va],
              uid=data["np_uid"][va], date=data["np_date"][va])
+    if ho is not None:                                 # out-of-fold predictions for the CV table
+        np.savez(os.path.join(out_dir, "oof_predictions.npz"), rows=ho,
+                 pred=predict(model, data, ho, version, a.residual), score=data["np_score"][ho],
+                 mask=data["np_mask"][ho], current=data["np_current"][ho],
+                 uid=data["np_uid"][ho], date=data["np_date"][ho])
     json.dump(res, open(os.path.join(out_dir, "results.json"), "w"), indent=2)   # written last = run complete
     print(f"best epoch {best_epoch}: val MAE {vm['mean_mae']:.3f} (persistence {res['val_persistence_mae']:.3f}), "
           f"val AUROC {vm['mean_auroc']:.3f} -> {out_dir}")
@@ -199,18 +240,21 @@ def main(a):
     device = torch.device(a.device if a.device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu"))
     torch.backends.cudnn.benchmark = False
     data = load_data(a.data, device)
+    folds = a.folds if a.run_all else [a.fold]
+    folds = folds if folds is not None else [None]
     if a.run_all:
-        jobs = [(m, v, s) for s in a.seeds for v in a.versions for m in a.models]
+        jobs = [(m, v, s, f) for f in folds for s in a.seeds for v in a.versions for m in a.models]
     else:
-        jobs = [(a.model, a.version, a.seed)]
+        jobs = [(a.model, a.version, a.seed, a.fold)]
     t_start = time.time()
-    for n, (m, v, s) in enumerate(jobs, 1):
-        out_dir = os.path.join(a.out_root, f"{m}_{v}_seed{s}")
+    for n, (m, v, s, f) in enumerate(jobs, 1):
+        name = f"{m}_{v}_seed{s}" if f is None else f"{m}_{v}_fold{f}_seed{s}"
+        out_dir = os.path.join(a.out_root, name)
         if os.path.exists(os.path.join(out_dir, "results.json")) and not a.overwrite:
             print(f"[{n}/{len(jobs)}] skip {out_dir} (finished already; --overwrite to redo)")
             continue
         print(f"[{n}/{len(jobs)}] elapsed {(time.time() - t_start) / 60:.0f} min")
-        train_one(a, m, v, s, data, out_dir)
+        train_one(a, m, v, s, data, out_dir, fold=f)
     print(f"\nall done in {(time.time() - t_start) / 60:.1f} min")
 
 
@@ -218,11 +262,13 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data", default="data/ces_forecast.npz")
     p.add_argument("--model", choices=list(MODELS), default="ode")
-    p.add_argument("--version", choices=["A", "B"], default="B")
+    p.add_argument("--version", choices=["A", "B", "H"], default="B")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--fold", type=int, default=None, help="CV fold 0-4 (history-only control)")
     p.add_argument("--run_all", action="store_true", help="every model x version for each of --seeds")
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
-    p.add_argument("--versions", nargs="+", choices=["A", "B"], default=["A", "B"], help="for --run_all")
+    p.add_argument("--folds", type=int, nargs="+", default=None, help="for --run_all: CV folds")
+    p.add_argument("--versions", nargs="+", choices=["A", "B", "H"], default=["A", "B"], help="for --run_all")
     p.add_argument("--models", nargs="+", choices=list(MODELS), default=["noode", "ode"],
                    help="for --run_all (variant C: --models grudt odernn --versions B)")
     p.add_argument("--residual", action="store_true",

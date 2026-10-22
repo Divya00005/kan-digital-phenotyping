@@ -109,7 +109,9 @@ def compute(preds, truth, w, horizons):
                 r[f"{h}w_{name}_onset_auroc"] = w_auroc(pos[neg_now], s[neg_now], ww[neg_now])
                 r[f"{h}w_{name}_onset_auprc"] = w_auprc(pos[neg_now], s[neg_now], ww[neg_now])
                 maes.append(mae)
-            r[f"{h}w_mae_avg"] = float(np.mean(maes))               # PRIMARY metric
+            r[f"{h}w_mae_avg"] = float(np.mean(maes))               # PRIMARY metric (RQ1)
+            for x in ["auroc", "auprc", "onset_auprc"]:              # task averages (history control)
+                r[f"{h}w_{x}_avg"] = float(np.mean([r[f"{h}w_{t}_{x}"] for t in TASKS]))
         out[meth] = r
     return out
 

@@ -64,6 +64,15 @@ Audit rules (already implemented in `data_prep.py`):
    used **twice** (`runs/TEST_SET_USED.json`, `runs/TEST_SET_USED_variantC.json`); any further
    test use must be agreed with the student and reported as such.
 
+5. **History-only control** (2026-10-22; pre-registration below): `--version H` and CV folds in
+   `train_forecast.py`, `baseline_history.py`, `evaluate_history_control.py`,
+   `test_history_control.py` (all pass). 5-fold CV on the 170 train + val students, test not used.
+   **Result: sensing adds ranking information = NO.** AUROC(B) - AUROC(H) is -0.006 / -0.004 /
+   -0.002 / -0.002 (B worse at 1-2 weeks, CI below zero); a linear / logistic regression on history
+   matches the KAN models; all history models beat persistence on AUROC (+0.02 to +0.04) and onset
+   AUC-PR (about x2); no model beats persistence on MAE, and B has the highest MAE of the models.
+   **Takeaway: the ranking gain comes from symptom history, not phone sensing.**
+
 ## Environment (this laptop)
 - Drive C: is almost full: keep everything on D:. Project: `D:\projects\kan-digital-phenotyping`.
 - Python 3.11 venv in `.venv` (torch 2.11 + CUDA 12.8, RTX 4050 6 GB). Before pip or long runs set
@@ -186,8 +195,17 @@ change, folds student-disjoint and complete, no split-2 rows); 3 runs (50 KAN ru
 4 evaluation table, decision rule, README / CLAUDE.md update.
 
 **Amendments:** none.
+**Process notes:** 50 runs finished in 86 min without errors. To compute the primary metric,
+`evaluate_forecast.compute` gained task-averaged keys (`*_auroc_avg`, `*_auprc_avg`,
+`*_onset_auprc_avg`); all existing RQ1 numbers were checked unchanged (2,567 of 2,567).
 
 ## Next step
-History-only control, step 2: code and tests (pre-registration above). Ask the student before
-starting. Not chosen yet: RQ2 / RQ3.
+Not decided yet; plan **RQ3** (conformal prediction intervals; coverage overall and by gender /
+race) next, as discussed with the student. Points to settle in its plan:
+- Which model: the history-control results show history-only models (KAN version H or the
+  linear / logistic baseline) are as good as or better than version B.
+- Calibration and coverage data: the CV out-of-fold predictions (170 students) are available;
+  the test set has been used twice, so a third use must be agreed and pre-registered, or the
+  coverage evaluation stays inside cross-validation.
+- RQ2 (behavioural factors) is still open; note that sensing showed no predictive value beyond history.
 Work in major steps and stop after each one for approval, unless the student approves a block.

@@ -11,6 +11,8 @@ clinical diagnostic system.
 2. **RQ1, forecasting with KAN-ODE**: future symptoms 1, 2, 4 and 8 weeks ahead. Two ODE designs
    tested (variant A: ODE after the encoder; variant C: ODE-RNN encoder). Test-set results below:
    negative for the ODE in both.
+3. **History-only control** (cross-validation, test set not used): the models' ranking gain over
+   persistence comes from the symptom-history features, not from phone sensing.
 
 Later stages (factor analysis, conformal prediction) build on these models.
 
@@ -112,6 +114,9 @@ better than persistence, but the ODE added nothing to that.
 | `evaluate_forecast.py` | RQ1 table: mean score, persistence, no-ODE and KAN-ODE per horizon; student-level bootstrap CIs, paired CIs for differences, the decision rule. Validation by default; `--split test --final` works once (lock file). `--control` / `--treatment` / `--ref_runs` for variant C |
 | `odernn_model.py` | Variant C: `ODERNNForecaster` (KAN ODE-RNN encoder) and the `GRUDtForecaster` control |
 | `test_odernn.py` | Tests: missing days ignored, zero dynamics = plain GRU, empty walk = pure ODE, exact time gaps, batch independence, gradients, small-batch fitting |
+| `baseline_history.py` | History-only control: linear / logistic regression on history + static features, per CV fold |
+| `evaluate_history_control.py` | History-only control: pooled out-of-fold table, paired bootstrap, the decision rule |
+| `test_history_control.py` | Tests: folds complete and student-disjoint, no test rows, version H ignores sensing, same model size, baseline |
 
 ```bash
 python forecast_prep.py --ema EMA/general_ema.csv --sensing Sensing/sensing.csv \
@@ -274,3 +279,72 @@ the survey history as a time series did not beat the six summary history feature
 **Limitations (in addition to those of variant A):** the test set had already been used once
 for variant A, and variant C was designed knowing that result (reported here, not hidden);
 validation selection used only 22 students; variant C was tested for input version B only.
+
+## History-only control: does phone sensing add anything?
+
+**Question:** the version B models (sensing + symptom history) rank screen-positive and onset risk
+better than persistence. Does that gain come from **phone sensing** or only from the
+**symptom-history** features? Predictive question only, no causal claim. Pre-registered in
+`CLAUDE.md` and committed (e9b5230) before any code.
+
+**Answer: no evidence that sensing adds ranking information.** The gain over persistence comes
+from the history features: the same model without sensing ranks as well or slightly better, and
+a plain linear / logistic regression on history does as well as either KAN model.
+
+- **Design:** 5-fold cross-validation by student on the 170 train + validation students
+  (22,699 cutoffs); **the test set was not used**. Each student is predicted once by models that
+  never saw them (34 held out per fold; 14 more held out for early stopping).
+- **Version B:** variant A no-ODE model, sensing + history + static inputs.
+  **Version H:** the same model (same size, 144,624 parameters) with the sensing inputs set to zero.
+  **Linear / logistic baseline:** on history + static features only.
+- Variant A version-B settings, no tuning; 5 seeds per fold, predictions averaged over seeds,
+  folds pooled; 1,000-resample paired student bootstrap.
+- **Decision rule (pre-registered):** sensing adds ranking information only if the CI of
+  AUROC(B) - AUROC(H) is entirely above zero at >= 2 of 4 horizons.
+
+```bash
+python test_history_control.py
+python baseline_history.py --out runs/historyctl/baseline
+python train_forecast.py --run_all --models noode --versions B H --folds 0 1 2 3 4 \
+    --seeds 0 1 2 3 4 --out_root runs/historyctl
+python evaluate_history_control.py
+```
+
+**Results (170 students, out-of-fold).** Screen-positive AUROC averaged over depression and
+anxiety, higher is better, [95% CI]:
+
+| Horizon | Persistence | Linear / logistic on history | KAN version H (history only) | KAN version B (sensing + history) | B - H |
+|---|---|---|---|---|---|
+| 1 week | 0.882 | **0.910** | 0.907 | 0.902 | -0.006 [-0.010, -0.002] |
+| 2 weeks | 0.852 | **0.886** | 0.885 | 0.881 | -0.004 [-0.008, -0.000] |
+| 4 weeks | 0.832 | 0.867 | 0.867 | 0.865 | -0.002 [-0.007, 0.004] |
+| 8 weeks | 0.801 | 0.840 | **0.842** | 0.840 | -0.002 [-0.007, 0.004] |
+
+Decision rule: B better at no horizon (B is **worse** at 1 and 2 weeks) -> **sensing adds ranking
+information: NO**.
+
+- **All three history-based models beat persistence** on AUROC at every horizon (+0.02 to +0.04,
+  all CIs above zero) and roughly double onset AUC-PR (about 0.25-0.28 vs 0.14-0.15).
+- **KAN vs linear:** version H and the linear / logistic baseline are indistinguishable
+  (AUROC differences <= 0.003, CIs include zero). Version B is slightly worse than the linear
+  baseline at 1-2 weeks.
+- **Score error (MAE):** no model beats persistence (0.559 / 0.644 / 0.711 / 0.781 at
+  1 / 2 / 4 / 8 weeks); among the models, version B is the worst at every horizon
+  (B - H = +0.014 to +0.043, all CIs above zero), and the linear baseline the best at 1-2 weeks.
+- **Training:** version B reached its best validation loss sooner (median epoch 4 vs 9 for H),
+  consistent with the sensing inputs mainly adding room to overfit.
+- Spread: SD over seeds <= 0.004 AUROC; over folds about 0.02.
+- The "mean score" row of the full table is a no-skill reference: its pooled AUROC (about 0.45)
+  only reflects small differences between the folds' training means.
+
+Full tables (onset AUC-PR, AUC-PR, MAE, all paired differences): `runs/historyctl/eval/table.md`
+(not in git).
+
+**What this means:** in CES, these 21 daily phone-sensing features did not add predictive
+information about future PHQ-2 / GAD-2 screen status beyond the student's own recent survey answers,
+for either a KAN or a simple model. Combined with version A (sensing only = no better than the mean)
+and the detection model (AUROC 0.58), sensing carries at most a weak signal here.
+
+**Limitations:** inputs were normalised with the original 149 training students (some held-out
+students' inputs contributed to those means / SDs; inputs only, no labels; same for B and H);
+only the no-ODE KAN and one simple baseline were tried; one dataset; associational only.
