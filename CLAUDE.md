@@ -44,6 +44,23 @@ Audit rules (already implemented in `data_prep.py`):
    `ode.py` (RK4, 1-day steps), `forecast_model.py` (`KANODEForecaster`, parameter-matched
    `NoODEForecaster`), `test_ode.py` (all pass). Persistence baseline in `baselines_test.json`.
 
+3. **RQ1 variant A, trained and tested** (2026-10-22): `train_forecast.py`, `evaluate_forecast.py`.
+   Settings chosen on validation (A: lr 3e-4; B: lr 1e-3, no residual), 5 seeds, predictions averaged.
+   **Test result: ODE helps = NO for both versions.** Version B: ODE better than no-ODE only at
+   1 week (MAE -0.015 [-0.030, -0.005]); no KAN model beats persistence on MAE (worse at 1 week,
+   tied at 2-8 weeks); both KAN models beat persistence on screen-positive AUROC (6/8) and onset
+   AUC-PR (8/8), identically, so the gain is not from the ODE. Version A (sensing only) = no better
+   than the training mean. Full numbers in README. **The test set has been used once**
+   (`runs/TEST_SET_USED.json`); evaluating any new model on it is a second use and must be agreed
+   with the student first.
+
+## Environment (this laptop)
+- Drive C: is almost full: keep everything on D:. Project: `D:\projects\kan-digital-phenotyping`.
+- Python 3.11 venv in `.venv` (torch 2.11 + CUDA 12.8, RTX 4050 6 GB). Before pip or long runs set
+  TEMP, TMP and PIP_CACHE_DIR to `D:\tmp`; install with `pip install --no-cache-dir`.
+- Run `data_prep.py` / `forecast_prep.py` from `data/` (outputs `data/*.npz`). One KAN-ODE epoch
+  is ~2-2.5 min on the GPU (batch 512); the no-ODE model ~7 s.
+
 ## RQ1 plan (agreed)
 - Models: persistence, KAN no-ODE (control), **KAN-ODE variant A** (encoder -> z(t0) ->
   dz/dt = KAN(z) -> heads). Variant C (KAN ODE-RNN encoder, Rubanova et al. 2019) only if A
@@ -55,6 +72,9 @@ Audit rules (already implemented in `data_prep.py`):
   KAN-ODE vs no-ODE excludes zero at >= 2 horizons.
 
 ## Next step
-Write `train_forecast.py` (GPU if available; `--model {ode,noode} --version {A,B} --seed N`;
-`--run_all --seeds ...`) and an evaluation script for the RQ1 table. Then 4 development runs,
-then 5 seeds. Ask the student before starting.
+Not decided yet. Options to discuss with the student (ask before starting any):
+- **Variant C** (KAN ODE-RNN encoder, Rubanova et al. 2019), as the plan says when variant A shows
+  no ODE benefit. Needs an agreed policy for the already-used test set.
+- A **symptom-history-only** control, to tell whether version B's ranking gain comes from sensing.
+- Move on to RQ2 / RQ3 with the version B models.
+Work in major steps and stop after each one for approval, unless the student approves a block.
