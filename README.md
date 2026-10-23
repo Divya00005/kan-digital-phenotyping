@@ -13,6 +13,9 @@ clinical diagnostic system.
    negative for the ODE in both.
 3. **History-only control** (cross-validation, test set not used): the models' ranking gain over
    persistence comes from the symptom-history features, not from phone sensing.
+4. **RQ3, conformal prediction sets** (nested cross-validation, test set not used): student-level
+   conformal sets reach their 90% / 80% coverage target for every model, overall and within
+   female, male, White and Asian students; ignoring that surveys come from students does not.
 
 Later stages (factor analysis, conformal prediction) build on these models.
 
@@ -117,6 +120,11 @@ better than persistence, but the ODE added nothing to that.
 | `baseline_history.py` | History-only control: linear / logistic regression on history + static features, per CV fold |
 | `evaluate_history_control.py` | History-only control: pooled out-of-fold table, paired bootstrap, the decision rule |
 | `test_history_control.py` | Tests: folds complete and student-disjoint, no test rows, version H ignores sensing, same model size, baseline |
+| `conformal.py` | RQ3 conformal methods (numpy only, works with any model): split conformal, student-level repeated subsampling, pooled CDF, CV+, CQR score, per-group calibration, joint coverage |
+| `quantile_model.py` | RQ3: KAN no-ODE with 5 / 10 / 90 / 95% quantile outputs (pinball loss) for CQR |
+| `rq3_conformal.py` | RQ3 evaluation: prediction sets for every model and method, coverage overall and by group, bootstrap CIs, flags, verdict |
+| `test_conformal.py` | Tests of the conformal methods on synthetic data |
+| `test_rq3_training.py` | Tests: nested folds disjoint and complete, no test rows, version Hn ignores gender / race, pinball loss, quantile models |
 
 ```bash
 python forecast_prep.py --ema EMA/general_ema.csv --sensing Sensing/sensing.csv \
@@ -348,3 +356,141 @@ and the detection model (AUROC 0.58), sensing carries at most a weak signal here
 **Limitations:** inputs were normalised with the original 149 training students (some held-out
 students' inputs contributed to those means / SDs; inputs only, no labels; same for B and H);
 only the no-ODE KAN and one simple baseline were tried; one dataset; associational only.
+
+## RQ3: conformal prediction sets, overall and by gender / race
+
+**Question:** can conformal prediction give reliable prediction sets for future PHQ-2 (depression)
+and GAD-2 (anxiety) scores at 1, 2, 4 and 8 weeks, overall and within gender and race groups?
+Pre-registered in `CLAUDE.md` (commit d5faf4e) with a dated amendment (251e369), both before any
+RQ3 training.
+
+**Answer: yes, if the calibration treats students (not surveys) as the unit.** With student-level
+repeated subsampling (method B), every model reached its 90% and 80% targets overall, and within
+female, male, White and Asian students under per-group calibration: all 8 models pass the
+pre-registered "reliable" check. The sets are wide (about 3 of the 7 possible scores at 90%), and
+under pooled calibration anxiety coverage is a few points lower for female than for male students.
+
+**Design**
+- **Students:** nested student-level cross-validation on the 170 train + validation students; **the
+  test set was not used.** Each outer fold (34 students) is evaluated by models and calibration data
+  that never saw those students. For the main method, the other 136 students are split into 68
+  model students (training) and 68 calibration students; for CV+, into 4 inner folds.
+- **Models:** persistence, linear model on history, KAN no-ODE H (history) and B (sensing +
+  history), KAN no-ODE Hn (H without gender / race inputs, sensitivity check), **KAN-ODE H**, and
+  two quantile models for CQR (linear quantile regression, quantile KAN H). One seed.
+- **Methods** (`conformal.py`):
+
+| Method | Paper | Role | Guarantee |
+|---|---|---|---|
+| **B: one random survey per calibration student, 200 subsamples, averaged p-values** | Dunn et al. 2023 | **main** | >= 1 - 2 alpha for a random survey of a new student (in practice about 1 - alpha) |
+| B1: single subsample | Dunn et al. 2023 | reference | >= 1 - alpha (exact) |
+| A: survey-level split conformal | Lei et al. 2018 | reference | none for a new student (surveys of one student are not exchangeable) |
+| Pooled CDF (each student weighted equally) | Dunn et al. 2023 | comparison | asymptotic only |
+| B + CV+ over 4 inner models | Barber et al. 2021 | comparison | **not covered by either paper's theorem**; CV+ alone: >= 0.757 at 90%, 0.557 at 80% |
+| CQR score with method B | Romano et al. 2019 | secondary | as B |
+| Per-group (Mondrian) calibration: gender (F, M), race (White, Asian) | Romano et al. 2020 | groups | >= target within each group |
+| Joint over horizons: alpha / 4 per horizon (Bonferroni); max-normalised score as an extra | Stankeviciute et al. 2021 | horizons | Bonferroni: >= target jointly |
+
+- Scores are whole numbers 0-6, so each set is a set of scores, reported by its coverage and by how
+  many of the 7 scores it contains ("values"). No randomised tie-breaking, so coverage can be above
+  target. Coverage is averaged over students (each counts once, matching the guarantee); 95% CIs
+  from 1,000 student-level bootstrap resamples with the sets held fixed.
+- **Pre-registered flags:** *under-coverage* = coverage CI entirely below target; *group gap* = the
+  paired CI of female - male or White - Asian excludes zero. **Reliable** = no under-coverage flag
+  overall (pooled) and none within female, male, White, Asian (per-group calibration).
+
+```bash
+python test_conformal.py
+python test_rq3_training.py
+python train_forecast.py --run_all --models noode --versions H B Hn --outers 0 1 2 3 4 --roles split --out_root runs/rq3
+python train_forecast.py --run_all --models noode_q --versions H --outers 0 1 2 3 4 --roles split --out_root runs/rq3
+python train_forecast.py --run_all --models noode --versions H B --outers 0 1 2 3 4 \
+    --roles inner0 inner1 inner2 inner3 --out_root runs/rq3
+python train_forecast.py --run_all --models ode --versions H --outers 0 1 2 3 4 --roles split --out_root runs/rq3
+python baseline_history.py --rq3 --outers 0 1 2 3 4 --out_root runs/rq3
+python rq3_conformal.py
+```
+
+**Results: method B, pooled calibration** (range over the 2 tasks x 4 horizons; 170 students)
+
+| Model | Coverage at 90% | Values at 90% | Coverage at 80% | Values at 80% | Reliable |
+|---|---|---|---|---|---|
+| Persistence | 0.931-0.968 | 3.77-3.98 | 0.833-0.954 | 2.47-3.97 | YES |
+| Linear (history) | 0.910-0.918 | 2.68-3.50 | 0.808-0.822 | 2.04-2.60 | YES |
+| KAN no-ODE H | 0.913-0.923 | 2.90-3.58 | 0.809-0.820 | 2.15-2.68 | YES |
+| KAN no-ODE B | 0.908-0.919 | 3.05-3.58 | 0.804-0.816 | 2.21-2.73 | YES |
+| KAN no-ODE Hn (no gender / race) | 0.913-0.920 | 2.85-3.58 | 0.807-0.820 | 2.12-2.64 | YES |
+| **KAN-ODE H** | 0.914-0.920 | 2.88-3.64 | 0.812-0.823 | 2.13-2.67 | YES |
+| Linear quantile (CQR) | 0.936-0.945 | 3.08-3.83 | 0.854-0.888 | 2.50-3.21 | YES |
+| Quantile KAN H (CQR) | 0.903-0.920 | 3.02-3.62 | 0.804-0.826 | 2.28-2.83 | YES |
+
+No model had an under-coverage flag (0 of 16 checks overall and 0 of 64 within groups each).
+Persistence over-covers (up to 0.97 at 90%) because its errors are whole numbers, so its sets jump
+in steps of whole scores.
+
+**Methods compared** (all point models, both tasks, all horizons):
+
+| Method | Under-coverage flags at 90% | at 80% | Mean coverage at 90% | Mean values at 90% |
+|---|---|---|---|---|
+| **B (main)** | **0 of 64** | **0 of 64** | 0.923 | 3.36 |
+| B1 single subsample | 2 of 48 | 0 of 48 | 0.916 | 3.33 |
+| A survey-level | **11 of 48** | **20 of 48** | 0.899 | 3.10 |
+| Pooled CDF | 0 of 48 | 0 of 48 | 0.911 | 3.22 |
+| B + CV+ (empirical only) | 0 of 32 | 0 of 32 | 0.922 | 3.35 |
+
+Treating every survey as an independent point (method A) gives narrower sets that fall short of
+the target in 11 checks at 90% and 20 at 80%: students who answer many surveys dominate the
+calibration. Calibrating by student (B) fixes this. Pooled CDF reaches the target with slightly
+smaller sets but has only an asymptotic guarantee; B + CV+ behaved like B.
+
+**Gender and race** (method B, 90%; full tables in `runs/rq3/eval/rq3_table.md`, not in git):
+- *Pooled calibration:* no group falls below 90% (0 flags within female, male, White, Asian). For
+  **anxiety**, female students are covered 2-5 points less than male students (e.g. KAN no-ODE H at
+  4 weeks: female 0.899, male 0.942, gap -0.044 [-0.075, -0.014]); this gap is flagged at 2-8 weeks
+  for most models. Depression and race show no flagged gaps under pooled calibration.
+- *Per-group calibration:* both groups reach >= 90% as guaranteed (female about 0.91, male about
+  0.95; White about 0.93, Asian about 0.95), but the gaps do **not** close: the smaller groups (male,
+  Asian) end up over-covered, because whole-number scores make their thresholds jump. Per-group
+  calibration guarantees each group's minimum, not equal coverage.
+- The linear quantile model (CQR) shows no flagged gender or race gaps, at the cost of wider sets
+  (+0.19 to +0.49 values vs the plain linear model, coverage about 0.94).
+- *Sensitivity (Hn, no gender / race inputs):* the same coverage and the same gap pattern as H,
+  with equal or marginally smaller sets (0.00 to -0.07 values). The gaps do not come from using gender or
+  race as inputs.
+- Small groups, pooled calibration (too small to conclude): Black (8 students) 0.88-0.93,
+  Hispanic / other (6) 0.97-0.99, multiracial / native (9) 0.90-0.93 for KAN no-ODE H.
+
+**Set sizes (method B, 90%, paired):**
+- KAN no-ODE H vs persistence: **0.3-0.9 fewer values** (CIs below zero at every horizon), with
+  coverage still above target.
+- KAN no-ODE H vs linear: KAN sets are 0.05-0.26 values **wider**; the simple model is at least as
+  good here.
+- KAN no-ODE B vs H: B wider at 1-2 weeks (+0.05 to +0.15), same later (sensing adds nothing).
+- **KAN-ODE H vs KAN no-ODE H: practically identical** (-0.02 to +0.06 values; coverage within 0.004).
+- CQR did not give narrower sets than the absolute-residual method for the same model.
+
+**Joint coverage over 1 / 2 / 4 / 8 weeks** (90%): Bonferroni guarantees it but is conservative
+(joint coverage 0.96-0.99, about 4.9-5.9 values per horizon). The max-normalised score (an extra,
+not from the six papers) gives joint coverage of about 0.91 over the available horizons with about
+3.9-4.4 values; on cutoffs that have all 4 horizons it is 0.885-0.906. No joint result has an
+under-coverage flag.
+
+**What this means:** conformal prediction can wrap any of these forecasters and give honest 90% or
+80% sets for a new student, but only if the calibration is done per student. The sets are wide
+(roughly 3 of 7 possible scores at 90%), which reflects how uncertain future PHQ-2 / GAD-2 scores
+are; neither the KAN nor the ODE makes them meaningfully narrower than a linear model. Coverage is
+not equal across gender for anxiety: pooled calibration covers female students slightly less,
+and per-group calibration lifts everyone above the target without equalising coverage.
+
+**The guarantee we claim:** for a new student from the same population and a randomly chosen survey
+of that student, the method-B set contains the true score with probability >= 1 - 2 alpha (observed:
+about 1 - alpha); with per-group calibration, the same within female, male, White and Asian students.
+It is **not** a guarantee for a specific student, a specific survey, the latest survey, or other
+universities and years.
+
+**Limitations:** cross-validation on 170 students, not an untouched test set (already used twice);
+students assumed to be drawn from one population although cohorts span 2017-2022 including COVID;
+surveys of one student are not exchangeable, so the guarantee is for a random survey of a new
+student; whole-number scores cause over-coverage; one seed; inputs normalised with the original
+149 training students; models use gender and race as inputs (Hn check: no change); small groups
+too small to conclude.

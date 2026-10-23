@@ -138,16 +138,20 @@ def cvplus_bounds(test_preds, cal_fold, cal_resid, alpha):
     return lower, upper
 
 
-def cvplus_subsample_sets(test_preds, cal_fold, cal_resid, cal_students, alpha, B, rng):
+def cvplus_subsample_sets(test_preds, cal_fold, cal_resid, cal_students, alpha, B, rng, return_width=False):
     """B + CV+ (empirical comparison only; not covered by either paper's theorem): in each of B
     subsamples, one calibration cutoff per student and the CV+ interval; a score value is in the
-    final set if it is inside the CV+ interval in at least half of the subsamples."""
+    final set if it is inside the CV+ interval in at least half of the subsamples.
+    return_width: also return each test point's mean (over subsamples) clipped CV+ interval width."""
     votes = np.zeros((len(test_preds), len(Y_VALUES)))
+    width = np.zeros(len(test_preds))
     for _ in range(B):
         idx = one_per_student(cal_students, rng)
         lo, hi = cvplus_bounds(test_preds, np.asarray(cal_fold)[idx], np.asarray(cal_resid)[idx], alpha)
         votes += (Y_VALUES[None, :] >= lo[:, None] - EPS) & (Y_VALUES[None, :] <= hi[:, None] + EPS)
-    return votes >= B / 2
+        width += clip_interval(lo, hi)[2]
+    sets = votes >= B / 2
+    return (sets, width / B) if return_width else sets
 
 
 # ----------------------------------------------------------------------------- sets and intervals

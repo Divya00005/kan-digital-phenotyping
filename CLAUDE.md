@@ -73,6 +73,19 @@ Audit rules (already implemented in `data_prep.py`):
    AUC-PR (about x2); no model beats persistence on MAE, and B has the highest MAE of the models.
    **Takeaway: the ranking gain comes from symptom history, not phone sensing.**
 
+6. **RQ3, conformal prediction sets** (2026-10-23; pre-registration and amendment below):
+   `conformal.py`, `quantile_model.py`, `rq3_conformal.py`, nested-CV roles in `train_forecast.py`,
+   RQ3 linear fits in `baseline_history.py`, tests `test_conformal.py`, `test_rq3_training.py`.
+   Nested student-level CV on 170 students, test set not used. **Result: all 8 models "reliable"**
+   with method B (student-level repeated subsampling): 0 under-coverage flags overall and within
+   F / M / White / Asian. Coverage at 90%: 0.90-0.92 for the KAN and linear point models (persistence
+   0.93-0.97 and linear CQR 0.94: over-coverage); sets about 3 of 7 scores. Survey-level split conformal (A) under-covers in 11 / 48
+   checks at 90% and 20 / 48 at 80%. Pooled calibration: anxiety coverage 2-5 points lower for female
+   than male students (flagged at 2-8 weeks for most models); per-group calibration lifts all groups
+   to >= target but leaves male / Asian over-covered, so gaps remain. Hn (no gender / race inputs):
+   same pattern. KAN no-ODE H sets 0.3-0.9 values narrower than persistence but 0.05-0.26 wider than
+   linear; **KAN-ODE H = KAN no-ODE H**. Bonferroni joint coverage 0.96-0.99 (conservative).
+
 ## Environment (this laptop)
 - Drive C: is almost full: keep everything on D:. Project: `D:\projects\kan-digital-phenotyping`.
 - Python 3.11 venv in `.venv` (torch 2.11 + CUDA 12.8, RTX 4050 6 GB). Before pip or long runs set
@@ -295,7 +308,8 @@ code + tests (folds disjoint and complete, no test rows, Hn ignores demographics
 4 training runs (4 KAN models x 5 outer folds x (1 split + 4 inner) = 100 runs, about 2-3 h, plus
 linear models); 5 evaluation and tables; 6 README / CLAUDE.md update.
 
-**Amendments** (agreed with the student 2026-10-23, before any RQ3 training run; no results seen):
+**Amendments** (agreed with the student 2026-10-22, committed 23:58 as 251e369, before any RQ3
+training run; no results seen):
 1. *Run list:* only the runs used by the pre-registered methods are trained: split role for KAN
    H, B, Hn and the quantile KAN (20 runs); inner folds for KAN H and B only (40 runs), since CV+ is
    applied to the point models persistence, linear, H and B. Hn and the quantile KAN are evaluated
@@ -309,8 +323,13 @@ linear models); 5 evaluation and tables; 6 README / CLAUDE.md update.
    mean over subsamples of the clipped CV+ interval width; bootstrap keeps the intervals fixed
    (resampling the evaluation students only).
 
+**Process notes:** 65 KAN / KAN-ODE runs trained in 2.0 h and 30 linear fits, all finished, no
+NaN; evaluation 33 min. `conformal.cvplus_subsample_sets` gained `return_width` (amendment 3).
+Evaluation bookkeeping cross-checked by recomputing several coverages by hand (identical).
+
 ## Next step
-RQ3, step 2: `conformal.py` and `test_conformal.py` on synthetic data (pre-registration above).
-Ask the student before starting. Later decision: whether to add KAN-ODE to RQ3 after the KAN
-results. RQ2 is still open.
+Not decided yet; ask the student. Open: **RQ2** (behavioural factors associated with future
+worsening; note sensing showed no predictive value beyond history). Possible RQ3 follow-ups:
+make subgroup coverage more equal (e.g. CQR, which showed no gender gap), conditional coverage by
+symptom level. The test set has been used twice; any further use must be agreed and pre-registered.
 Work in major steps and stop after each one for approval, unless the student approves a block.
