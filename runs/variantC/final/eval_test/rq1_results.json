@@ -1,0 +1,3076 @@
+{
+  "split": "test",
+  "n_boot": 1000,
+  "boot_seed": 0,
+  "results": {
+    "B": {
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "counts": {
+        "1w": {
+          "n": 3965,
+          "students": 43,
+          "depression": {
+            "prevalence": 0.1455233291298865,
+            "onset_n": 3382,
+            "onset_rate": 0.05588409225310467
+          },
+          "anxiety": {
+            "prevalence": 0.13442622950819672,
+            "onset_n": 3426,
+            "onset_rate": 0.06071220081727963
+          }
+        },
+        "2w": {
+          "n": 3909,
+          "students": 43,
+          "depression": {
+            "prevalence": 0.14428242517267845,
+            "onset_n": 3328,
+            "onset_rate": 0.06670673076923077
+          },
+          "anxiety": {
+            "prevalence": 0.1383985674085444,
+            "onset_n": 3373,
+            "onset_rate": 0.06729914023124815
+          }
+        },
+        "4w": {
+          "n": 3799,
+          "students": 43,
+          "depression": {
+            "prevalence": 0.15030271123979994,
+            "onset_n": 3239,
+            "onset_rate": 0.07409694350108058
+          },
+          "anxiety": {
+            "prevalence": 0.13635167149249802,
+            "onset_n": 3279,
+            "onset_rate": 0.07349801768831961
+          }
+        },
+        "8w": {
+          "n": 3636,
+          "students": 42,
+          "depression": {
+            "prevalence": 0.15676567656765678,
+            "onset_n": 3108,
+            "onset_rate": 0.09202059202059203
+          },
+          "anxiety": {
+            "prevalence": 0.14796479647964797,
+            "onset_n": 3143,
+            "onset_rate": 0.0935412026726058
+          }
+        }
+      },
+      "bootstrap": {
+        "point": {
+          "mean": {
+            "1w_depression_mae": 1.1837495283100374,
+            "1w_depression_auroc": 0.5,
+            "1w_depression_auprc": 0.1455233291298865,
+            "1w_depression_onset_auroc": 0.5,
+            "1w_depression_onset_auprc": 0.05588409225310467,
+            "1w_anxiety_mae": 1.1198850578197466,
+            "1w_anxiety_auroc": 0.5,
+            "1w_anxiety_auprc": 0.13442622950819672,
+            "1w_anxiety_onset_auroc": 0.5,
+            "1w_anxiety_onset_auprc": 0.06071220081727963,
+            "1w_mae_avg": 1.151817293064892,
+            "2w_depression_mae": 1.1890026773446416,
+            "2w_depression_auroc": 0.5,
+            "2w_depression_auprc": 0.14428242517267845,
+            "2w_depression_onset_auroc": 0.5,
+            "2w_depression_onset_auprc": 0.06670673076923077,
+            "2w_anxiety_mae": 1.1281711279995212,
+            "2w_anxiety_auroc": 0.5,
+            "2w_anxiety_auprc": 0.1383985674085444,
+            "2w_anxiety_onset_auroc": 0.5,
+            "2w_anxiety_onset_auprc": 0.06729914023124815,
+            "2w_mae_avg": 1.1585869026720814,
+            "4w_depression_mae": 1.2095764391859696,
+            "4w_depression_auroc": 0.5,
+            "4w_depression_auprc": 0.15030271123979994,
+            "4w_depression_onset_auroc": 0.5,
+            "4w_depression_onset_auprc": 0.07409694350108058,
+            "4w_anxiety_mae": 1.1374951968477978,
+            "4w_anxiety_auroc": 0.5,
+            "4w_anxiety_auprc": 0.13635167149249802,
+            "4w_anxiety_onset_auroc": 0.5,
+            "4w_anxiety_onset_auprc": 0.07349801768831961,
+            "4w_mae_avg": 1.1735358180168838,
+            "8w_depression_mae": 1.2214714148388182,
+            "8w_depression_auroc": 0.5,
+            "8w_depression_auprc": 0.15676567656765678,
+            "8w_depression_onset_auroc": 0.5,
+            "8w_depression_onset_auprc": 0.09202059202059203,
+            "8w_anxiety_mae": 1.167797686374358,
+            "8w_anxiety_auroc": 0.5,
+            "8w_anxiety_auprc": 0.14796479647964797,
+            "8w_anxiety_onset_auroc": 0.5,
+            "8w_anxiety_onset_auprc": 0.0935412026726058,
+            "8w_mae_avg": 1.194634550606588
+          },
+          "persistence": {
+            "1w_depression_mae": 0.6,
+            "1w_depression_auroc": 0.894451105850192,
+            "1w_depression_auprc": 0.648797812306698,
+            "1w_depression_onset_auroc": 0.7544289177549435,
+            "1w_depression_onset_auprc": 0.12673236890374617,
+            "1w_anxiety_mae": 0.6655737704918033,
+            "1w_anxiety_auroc": 0.8639583524667952,
+            "1w_anxiety_auprc": 0.5721416367390303,
+            "1w_anxiety_onset_auroc": 0.7234710403021466,
+            "1w_anxiety_onset_auprc": 0.11660859786267924,
+            "1w_mae_avg": 0.6327868852459017,
+            "2w_depression_mae": 0.6863647991813763,
+            "2w_depression_auroc": 0.8646630410584232,
+            "2w_depression_auprc": 0.5714213034912268,
+            "2w_depression_onset_auroc": 0.7417842826728854,
+            "2w_depression_onset_auprc": 0.14880765617442887,
+            "2w_anxiety_mae": 0.7431568176004093,
+            "2w_anxiety_auroc": 0.8490383011138869,
+            "2w_anxiety_auprc": 0.54414118324794,
+            "2w_anxiety_onset_auroc": 0.7128379229901056,
+            "2w_anxiety_onset_auprc": 0.12338106022973214,
+            "2w_mae_avg": 0.7147608083908927,
+            "4w_depression_mae": 0.7733614108976047,
+            "4w_depression_auroc": 0.8465411558669002,
+            "4w_depression_auprc": 0.5463646967860551,
+            "4w_depression_onset_auroc": 0.7175634933866845,
+            "4w_depression_onset_auprc": 0.14833177796673946,
+            "4w_anxiety_mae": 0.8365359305080284,
+            "4w_anxiety_auroc": 0.8139410364341788,
+            "4w_anxiety_auprc": 0.48449490939090245,
+            "4w_anxiety_onset_auroc": 0.6753822262407841,
+            "4w_anxiety_onset_auprc": 0.11943695571075588,
+            "4w_mae_avg": 0.8049486707028166,
+            "8w_depression_mae": 0.8737623762376238,
+            "8w_depression_auroc": 0.8104270379144207,
+            "8w_depression_auprc": 0.48598988874126703,
+            "8w_depression_onset_auroc": 0.7039755071292988,
+            "8w_depression_onset_auprc": 0.1727254639203316,
+            "8w_anxiety_mae": 0.9612211221122112,
+            "8w_anxiety_auroc": 0.7416080886817493,
+            "8w_anxiety_auprc": 0.4107406457450173,
+            "8w_anxiety_onset_auroc": 0.595851151973601,
+            "8w_anxiety_onset_auprc": 0.1212294691930652,
+            "8w_mae_avg": 0.9174917491749175
+          },
+          "ref_noode": {
+            "1w_depression_mae": 0.7400318573591913,
+            "1w_depression_auroc": 0.9055597388274244,
+            "1w_depression_auprc": 0.7204681629716784,
+            "1w_depression_onset_auroc": 0.7923947391532734,
+            "1w_depression_onset_auprc": 0.22622921299656065,
+            "1w_anxiety_mae": 0.7673286173713463,
+            "1w_anxiety_auroc": 0.8817907389670991,
+            "1w_anxiety_auprc": 0.6566266422971376,
+            "1w_anxiety_onset_auroc": 0.7732048094851078,
+            "1w_anxiety_onset_auprc": 0.2452225493736289,
+            "1w_mae_avg": 0.7536802373652688,
+            "2w_depression_mae": 0.7756668944183397,
+            "2w_depression_auroc": 0.8890712294204327,
+            "2w_depression_auprc": 0.665118894490618,
+            "2w_depression_onset_auroc": 0.8018134038739319,
+            "2w_depression_onset_auprc": 0.2733845656348996,
+            "2w_anxiety_mae": 0.8011095459010937,
+            "2w_anxiety_auroc": 0.8773165730744069,
+            "2w_anxiety_auprc": 0.6339616747460189,
+            "2w_anxiety_onset_auroc": 0.7829003195442923,
+            "2w_anxiety_onset_auprc": 0.25792634818480453,
+            "2w_mae_avg": 0.7883882201597168,
+            "4w_depression_mae": 0.8522084926297459,
+            "4w_depression_auroc": 0.8724828937688397,
+            "4w_depression_auprc": 0.6285611917950471,
+            "4w_depression_onset_auroc": 0.7776300433477826,
+            "4w_depression_onset_auprc": 0.25668758173298056,
+            "4w_anxiety_mae": 0.8585107371556222,
+            "4w_anxiety_auroc": 0.8533948238306666,
+            "4w_anxiety_auprc": 0.6022605363158536,
+            "4w_anxiety_onset_auroc": 0.7565812297345655,
+            "4w_anxiety_onset_auprc": 0.21681117647053788,
+            "4w_mae_avg": 0.8553596148926841,
+            "8w_depression_mae": 0.9285795977677253,
+            "8w_depression_auroc": 0.829771918380426,
+            "8w_depression_auprc": 0.5756917606455878,
+            "8w_depression_onset_auroc": 0.7364860511564977,
+            "8w_depression_onset_auprc": 0.26815131565252526,
+            "8w_anxiety_mae": 0.9452229863661776,
+            "8w_anxiety_auroc": 0.7920645529793775,
+            "8w_anxiety_auprc": 0.5261014603998305,
+            "8w_anxiety_onset_auroc": 0.6882412494657393,
+            "8w_anxiety_onset_auprc": 0.2040048019371401,
+            "8w_mae_avg": 0.9369012920669515
+          },
+          "ref_ode": {
+            "1w_depression_mae": 0.7211896081975324,
+            "1w_depression_auroc": 0.9065986794047295,
+            "1w_depression_auprc": 0.726651993635158,
+            "1w_depression_onset_auroc": 0.7905388274946684,
+            "1w_depression_onset_auprc": 0.2259470551450459,
+            "1w_anxiety_mae": 0.7559534560224278,
+            "1w_anxiety_auroc": 0.8847170652986788,
+            "1w_anxiety_auprc": 0.6585537110909424,
+            "1w_anxiety_onset_auroc": 0.7758491896543481,
+            "1w_anxiety_onset_auprc": 0.25155891021056187,
+            "1w_mae_avg": 0.7385715321099802,
+            "2w_depression_mae": 0.7705147439160309,
+            "2w_depression_auroc": 0.8907499284419426,
+            "2w_depression_auprc": 0.6686521384034727,
+            "2w_depression_onset_auroc": 0.8050518322572412,
+            "2w_depression_onset_auprc": 0.2700055338234145,
+            "2w_anxiety_mae": 0.7985298979830165,
+            "2w_anxiety_auroc": 0.8787006994173717,
+            "2w_anxiety_auprc": 0.6404351146282603,
+            "2w_anxiety_onset_auroc": 0.7825040398128104,
+            "2w_anxiety_onset_auprc": 0.25769710149736186,
+            "2w_mae_avg": 0.7845223209495238,
+            "4w_depression_mae": 0.8618990239716927,
+            "4w_depression_auroc": 0.8703789304183838,
+            "4w_depression_auprc": 0.6214276835641049,
+            "4w_depression_onset_auroc": 0.7731771701678337,
+            "4w_depression_onset_auprc": 0.25677775276835657,
+            "4w_anxiety_mae": 0.8669471852569619,
+            "4w_anxiety_auroc": 0.8531324026599857,
+            "4w_anxiety_auprc": 0.5999475059859802,
+            "4w_anxiety_onset_auroc": 0.757049707849945,
+            "4w_anxiety_onset_auprc": 0.21795994446288205,
+            "4w_mae_avg": 0.8644231046143274,
+            "8w_depression_mae": 0.9384542615721525,
+            "8w_depression_auroc": 0.8301638800196839,
+            "8w_depression_auprc": 0.5756261170299657,
+            "8w_depression_onset_auroc": 0.7378638370842482,
+            "8w_depression_onset_auprc": 0.26970603572572377,
+            "8w_anxiety_mae": 0.9525896138475739,
+            "8w_anxiety_auroc": 0.7935921004317451,
+            "8w_anxiety_auprc": 0.5320801051398686,
+            "8w_anxiety_onset_auroc": 0.6913524974749464,
+            "8w_anxiety_onset_auprc": 0.20725518922432767,
+            "8w_mae_avg": 0.9455219377098631
+          },
+          "grudt": {
+            "1w_depression_mae": 0.749359404810083,
+            "1w_depression_auroc": 0.9093039660827592,
+            "1w_depression_auprc": 0.7279978969691682,
+            "1w_depression_onset_auroc": 0.8011978915517907,
+            "1w_depression_onset_auprc": 0.23727421984168198,
+            "1w_anxiety_mae": 0.775960145638915,
+            "1w_anxiety_auroc": 0.8829792002868926,
+            "1w_anxiety_auprc": 0.6389433286126077,
+            "1w_anxiety_onset_auroc": 0.7751828656117034,
+            "1w_anxiety_onset_auprc": 0.24705102795165831,
+            "1w_mae_avg": 0.762659775224499,
+            "2w_depression_mae": 0.7896049210816493,
+            "2w_depression_auroc": 0.893242799139183,
+            "2w_depression_auprc": 0.6727628158700256,
+            "2w_depression_onset_auroc": 0.8112081817812661,
+            "2w_depression_onset_auprc": 0.27966724033335727,
+            "2w_anxiety_mae": 0.8208356588720573,
+            "2w_anxiety_auroc": 0.8787012482382849,
+            "2w_anxiety_auprc": 0.6364233725973901,
+            "2w_anxiety_onset_auroc": 0.7839617331006998,
+            "2w_anxiety_onset_auprc": 0.26189533563017237,
+            "2w_mae_avg": 0.8052202899768532,
+            "4w_depression_mae": 0.8730451804155518,
+            "4w_depression_auroc": 0.8708905439922568,
+            "4w_depression_auprc": 0.6278498479917652,
+            "4w_depression_onset_auroc": 0.7764935534066911,
+            "4w_depression_onset_auprc": 0.25957176258002035,
+            "4w_anxiety_mae": 0.8868603749682665,
+            "4w_anxiety_auroc": 0.8477539454375784,
+            "4w_anxiety_auprc": 0.5823868920456384,
+            "4w_anxiety_onset_auroc": 0.7457638924931503,
+            "4w_anxiety_onset_auprc": 0.21291470479864025,
+            "4w_mae_avg": 0.8799527776919092,
+            "8w_depression_mae": 0.9524633799678552,
+            "8w_depression_auroc": 0.824699305340978,
+            "8w_depression_auprc": 0.5822095809658243,
+            "8w_depression_onset_auroc": 0.7263905477938079,
+            "8w_depression_onset_auprc": 0.26167023596764816,
+            "8w_anxiety_mae": 0.9721017932545956,
+            "8w_anxiety_auroc": 0.7818421046316006,
+            "8w_anxiety_auprc": 0.505729892424327,
+            "8w_anxiety_onset_auroc": 0.6679142699550863,
+            "8w_anxiety_onset_auprc": 0.20076797913568836,
+            "8w_mae_avg": 0.9622825866112255
+          },
+          "odernn": {
+            "1w_depression_mae": 0.7499814302274137,
+            "1w_depression_auroc": 0.9094587073553514,
+            "1w_depression_auprc": 0.7272724135873254,
+            "1w_depression_onset_auroc": 0.8023851778941037,
+            "1w_depression_onset_auprc": 0.23436859478138888,
+            "1w_anxiety_mae": 0.7815537980603804,
+            "1w_anxiety_auroc": 0.8829647135228749,
+            "1w_anxiety_auprc": 0.6447942028749288,
+            "1w_anxiety_onset_auroc": 0.7747219665822058,
+            "1w_anxiety_onset_auprc": 0.23675645171364115,
+            "1w_mae_avg": 0.765767614143897,
+            "2w_depression_mae": 0.7882539846801673,
+            "2w_depression_auroc": 0.8933917459105896,
+            "2w_depression_auprc": 0.6703916192961958,
+            "2w_depression_onset_auroc": 0.8121392480697053,
+            "2w_depression_onset_auprc": 0.2804718236786823,
+            "2w_anxiety_mae": 0.8222326973519457,
+            "2w_anxiety_auroc": 0.8791446955361102,
+            "2w_anxiety_auprc": 0.6408679598635103,
+            "2w_anxiety_onset_auroc": 0.7853256075122315,
+            "2w_anxiety_onset_auprc": 0.2540148667680848,
+            "2w_mae_avg": 0.8052433410160564,
+            "4w_depression_mae": 0.8698436582235952,
+            "4w_depression_auroc": 0.8717043513738154,
+            "4w_depression_auprc": 0.6306175632536111,
+            "4w_depression_onset_auroc": 0.7780621318217184,
+            "4w_depression_onset_auprc": 0.2573524308549862,
+            "4w_anxiety_mae": 0.8894283608304228,
+            "4w_anxiety_auroc": 0.8463994756283693,
+            "4w_anxiety_auprc": 0.5917062435429695,
+            "4w_anxiety_onset_auroc": 0.7434624766785312,
+            "4w_anxiety_onset_auprc": 0.2022417866722945,
+            "4w_mae_avg": 0.879636009527009,
+            "8w_depression_mae": 0.9522125385332816,
+            "8w_depression_auroc": 0.8236435838454584,
+            "8w_depression_auprc": 0.5769198666391148,
+            "8w_depression_onset_auroc": 0.725230828703543,
+            "8w_depression_onset_auprc": 0.2606498103943336,
+            "8w_anxiety_mae": 0.9704831944751923,
+            "8w_anxiety_auroc": 0.7813813204825754,
+            "8w_anxiety_auprc": 0.5147483846381674,
+            "8w_anxiety_onset_auroc": 0.6673746367623918,
+            "8w_anxiety_onset_auprc": 0.2020050726890763,
+            "8w_mae_avg": 0.961347866504237
+          }
+        },
+        "ci": {
+          "mean": {
+            "1w_depression_mae": [
+              0.9592737283101552,
+              1.5264389632083346
+            ],
+            "1w_depression_auroc": [
+              0.5,
+              0.5
+            ],
+            "1w_depression_auprc": [
+              0.06892262467235936,
+              0.24217838942103648
+            ],
+            "1w_depression_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "1w_depression_onset_auprc": [
+              0.03537033745084352,
+              0.07993433599272241
+            ],
+            "1w_anxiety_mae": [
+              0.9171884437530076,
+              1.4176856784646925
+            ],
+            "1w_anxiety_auroc": [
+              0.5,
+              0.5
+            ],
+            "1w_anxiety_auprc": [
+              0.06919104792732872,
+              0.22502737510814688
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.041684678653893095,
+              0.08328162753151723
+            ],
+            "1w_mae_avg": [
+              0.9404851429808208,
+              1.4715317786060897
+            ],
+            "2w_depression_mae": [
+              0.9659567266107018,
+              1.5204374708656963
+            ],
+            "2w_depression_auroc": [
+              0.5,
+              0.5
+            ],
+            "2w_depression_auprc": [
+              0.07077440280570951,
+              0.23477897993798028
+            ],
+            "2w_depression_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "2w_depression_onset_auprc": [
+              0.04066157358771039,
+              0.09544501944596126
+            ],
+            "2w_anxiety_mae": [
+              0.9291313872967025,
+              1.4156765058767493
+            ],
+            "2w_anxiety_auroc": [
+              0.5,
+              0.5
+            ],
+            "2w_anxiety_auprc": [
+              0.07567614731304347,
+              0.22444995921102337
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.047641915068315874,
+              0.0908501735996983
+            ],
+            "2w_mae_avg": [
+              0.9516136057041779,
+              1.4637744626388625
+            ],
+            "4w_depression_mae": [
+              0.9793216802502829,
+              1.54855687758017
+            ],
+            "4w_depression_auroc": [
+              0.5,
+              0.5
+            ],
+            "4w_depression_auprc": [
+              0.07429017201594294,
+              0.2458309858992086
+            ],
+            "4w_depression_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "4w_depression_onset_auprc": [
+              0.04544457151976169,
+              0.10530032201842734
+            ],
+            "4w_anxiety_mae": [
+              0.9174975724112802,
+              1.4347448707084474
+            ],
+            "4w_anxiety_auroc": [
+              0.5,
+              0.5
+            ],
+            "4w_anxiety_auprc": [
+              0.06816928383940862,
+              0.22708351444736222
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.04804175577951057,
+              0.10497595898273396
+            ],
+            "4w_mae_avg": [
+              0.9498558340180933,
+              1.4942508797471539
+            ],
+            "8w_depression_mae": [
+              0.9806813239477429,
+              1.572620188456345
+            ],
+            "8w_depression_auroc": [
+              0.5,
+              0.5
+            ],
+            "8w_depression_auprc": [
+              0.07665196602518412,
+              0.2586534924885921
+            ],
+            "8w_depression_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "8w_depression_onset_auprc": [
+              0.05592347653174341,
+              0.13230878306605623
+            ],
+            "8w_anxiety_mae": [
+              0.9540573968342916,
+              1.4826041674395496
+            ],
+            "8w_anxiety_auroc": [
+              0.5,
+              0.5
+            ],
+            "8w_anxiety_auprc": [
+              0.0798936220311756,
+              0.24419363547711714
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.5,
+              0.5
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.06252117640701929,
+              0.1299877492334101
+            ],
+            "8w_mae_avg": [
+              0.9703445121891106,
+              1.5276179297697756
+            ]
+          },
+          "persistence": {
+            "1w_depression_mae": [
+              0.4946097987135199,
+              0.7000767918088736
+            ],
+            "1w_depression_auroc": [
+              0.8215885617528557,
+              0.9351839756506987
+            ],
+            "1w_depression_auprc": [
+              0.3351851469167124,
+              0.8231261159827872
+            ],
+            "1w_depression_onset_auroc": [
+              0.7089493288232034,
+              0.794057916119335
+            ],
+            "1w_depression_onset_auprc": [
+              0.08288603780134905,
+              0.1653024541342016
+            ],
+            "1w_anxiety_mae": [
+              0.560632033918375,
+              0.7618910459309278
+            ],
+            "1w_anxiety_auroc": [
+              0.7810165102839669,
+              0.9071638481721938
+            ],
+            "1w_anxiety_auprc": [
+              0.2539636537265367,
+              0.7595984147720388
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.6746123648944711,
+              0.7671250686989994
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.08220008167229356,
+              0.15084582228896934
+            ],
+            "1w_mae_avg": [
+              0.5352489083699276,
+              0.7254312743447283
+            ],
+            "2w_depression_mae": [
+              0.5557937296715922,
+              0.8116557975235781
+            ],
+            "2w_depression_auroc": [
+              0.7788876875029632,
+              0.9156806410531241
+            ],
+            "2w_depression_auprc": [
+              0.2578610169239214,
+              0.7716337528049885
+            ],
+            "2w_depression_onset_auroc": [
+              0.6766977448140056,
+              0.7879230363009776
+            ],
+            "2w_depression_onset_auprc": [
+              0.09330613548853023,
+              0.1996536026661628
+            ],
+            "2w_anxiety_mae": [
+              0.6319378461689434,
+              0.8510427342208358
+            ],
+            "2w_anxiety_auroc": [
+              0.7654802662834048,
+              0.8961691797657695
+            ],
+            "2w_anxiety_auprc": [
+              0.2694894617783127,
+              0.7338625238324511
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.6588053937785014,
+              0.7605051295777865
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.08793157011163334,
+              0.15662737778017036
+            ],
+            "2w_mae_avg": [
+              0.6014081794384113,
+              0.8202653332044063
+            ],
+            "4w_depression_mae": [
+              0.628736628681459,
+              0.906379078072773
+            ],
+            "4w_depression_auroc": [
+              0.7381562020873983,
+              0.9087645288449674
+            ],
+            "4w_depression_auprc": [
+              0.21742515845727506,
+              0.766687540936428
+            ],
+            "4w_depression_onset_auroc": [
+              0.6350924101451935,
+              0.7769655042524719
+            ],
+            "4w_depression_onset_auprc": [
+              0.07880381790598084,
+              0.21236024662550113
+            ],
+            "4w_anxiety_mae": [
+              0.7064963570155345,
+              0.9537048949945993
+            ],
+            "4w_anxiety_auroc": [
+              0.698733289671341,
+              0.8769637729682386
+            ],
+            "4w_anxiety_auprc": [
+              0.1757177004469301,
+              0.7069203626872919
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.6038761203836207,
+              0.7298694613734904
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.07332987230904812,
+              0.1654330764311668
+            ],
+            "4w_mae_avg": [
+              0.679928352293779,
+              0.9198079389185769
+            ],
+            "8w_depression_mae": [
+              0.6888920592839525,
+              1.033718182754405
+            ],
+            "8w_depression_auroc": [
+              0.6895636623468768,
+              0.885095638535355
+            ],
+            "8w_depression_auprc": [
+              0.16907835203004903,
+              0.7375416482219483
+            ],
+            "8w_depression_onset_auroc": [
+              0.629028022848843,
+              0.7638452625648757
+            ],
+            "8w_depression_onset_auprc": [
+              0.09906298461439574,
+              0.2456312113164817
+            ],
+            "8w_anxiety_mae": [
+              0.7918083539080685,
+              1.1103992353220022
+            ],
+            "8w_anxiety_auroc": [
+              0.5942981552354514,
+              0.8316787744666612
+            ],
+            "8w_anxiety_auprc": [
+              0.12516621251123314,
+              0.6657423781995047
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.5297073136306991,
+              0.6555829926494781
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.07848842173583405,
+              0.16653622058844628
+            ],
+            "8w_mae_avg": [
+              0.7541203175657915,
+              1.0603321326951503
+            ]
+          },
+          "ref_noode": {
+            "1w_depression_mae": [
+              0.6148106661941368,
+              0.8895894760624787
+            ],
+            "1w_depression_auroc": [
+              0.8324950647666561,
+              0.9449696439947537
+            ],
+            "1w_depression_auprc": [
+              0.39712318383418593,
+              0.8727773480788819
+            ],
+            "1w_depression_onset_auroc": [
+              0.7297232705770683,
+              0.8421215063456191
+            ],
+            "1w_depression_onset_auprc": [
+              0.1601052710242544,
+              0.298093437773654
+            ],
+            "1w_anxiety_mae": [
+              0.6456528182304878,
+              0.9328032126114613
+            ],
+            "1w_anxiety_auroc": [
+              0.7945425958509069,
+              0.9257795794204767
+            ],
+            "1w_anxiety_auprc": [
+              0.31572929879680467,
+              0.8255095749514991
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.7091802213557358,
+              0.8245756093622002
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.15642200562817454,
+              0.3446906504406578
+            ],
+            "1w_mae_avg": [
+              0.6361609234542289,
+              0.9063821872846798
+            ],
+            "2w_depression_mae": [
+              0.6425749776632467,
+              0.927243209319866
+            ],
+            "2w_depression_auroc": [
+              0.8054269697847734,
+              0.9343562633563736
+            ],
+            "2w_depression_auprc": [
+              0.3380655934616417,
+              0.8398563570483382
+            ],
+            "2w_depression_onset_auroc": [
+              0.7268415463543336,
+              0.8526966930283526
+            ],
+            "2w_depression_onset_auprc": [
+              0.18726061607142833,
+              0.346865748975547
+            ],
+            "2w_anxiety_mae": [
+              0.6823102268613508,
+              0.9552538473531473
+            ],
+            "2w_anxiety_auroc": [
+              0.7944714760754342,
+              0.921202785445258
+            ],
+            "2w_anxiety_auprc": [
+              0.33395917692549626,
+              0.7938059890601568
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.7304737445623317,
+              0.8267010192068557
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.18271031831082207,
+              0.342901087180396
+            ],
+            "2w_mae_avg": [
+              0.6663714393860859,
+              0.9369512869434419
+            ],
+            "4w_depression_mae": [
+              0.7004705246360542,
+              1.0108548977039638
+            ],
+            "4w_depression_auroc": [
+              0.7703794059635768,
+              0.927178399531881
+            ],
+            "4w_depression_auprc": [
+              0.27971114123762725,
+              0.8252712660705855
+            ],
+            "4w_depression_onset_auroc": [
+              0.6854384832439753,
+              0.8384227513072435
+            ],
+            "4w_depression_onset_auprc": [
+              0.1577838075217329,
+              0.3379430389129086
+            ],
+            "4w_anxiety_mae": [
+              0.726914294690518,
+              1.0307914323639755
+            ],
+            "4w_anxiety_auroc": [
+              0.7422119808513888,
+              0.9104417628321935
+            ],
+            "4w_anxiety_auprc": [
+              0.22227759233810654,
+              0.8048342638513949
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.676216779827351,
+              0.8180940619541512
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.13049093708398068,
+              0.32067093512686223
+            ],
+            "4w_mae_avg": [
+              0.7188460868138903,
+              1.0173240018920071
+            ],
+            "8w_depression_mae": [
+              0.7668974031011828,
+              1.1019891112324498
+            ],
+            "8w_depression_auroc": [
+              0.7049771934114614,
+              0.9055364872053614
+            ],
+            "8w_depression_auprc": [
+              0.22052637159587912,
+              0.8100922925197785
+            ],
+            "8w_depression_onset_auroc": [
+              0.6463439477777012,
+              0.8029948409335876
+            ],
+            "8w_depression_onset_auprc": [
+              0.16484593407584472,
+              0.3969934207514497
+            ],
+            "8w_anxiety_mae": [
+              0.7973803232157582,
+              1.1212840256063423
+            ],
+            "8w_anxiety_auroc": [
+              0.6520252214057045,
+              0.8761927426329534
+            ],
+            "8w_anxiety_auprc": [
+              0.16137267718195852,
+              0.766389819943582
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.603422245627598,
+              0.7603092947754725
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.12986689697799386,
+              0.2850580598452584
+            ],
+            "8w_mae_avg": [
+              0.7846400609057128,
+              1.1049799939409555
+            ]
+          },
+          "ref_ode": {
+            "1w_depression_mae": [
+              0.6010772020322835,
+              0.8563558754346288
+            ],
+            "1w_depression_auroc": [
+              0.8313374306969017,
+              0.9462282827274499
+            ],
+            "1w_depression_auprc": [
+              0.4073115918694747,
+              0.8792884601894599
+            ],
+            "1w_depression_onset_auroc": [
+              0.7220035869867184,
+              0.8427486259039885
+            ],
+            "1w_depression_onset_auprc": [
+              0.15695961349102366,
+              0.3097903138725366
+            ],
+            "1w_anxiety_mae": [
+              0.6390536237809731,
+              0.913329042265356
+            ],
+            "1w_anxiety_auroc": [
+              0.7990415808771638,
+              0.9284518115936004
+            ],
+            "1w_anxiety_auprc": [
+              0.3176496574223856,
+              0.8299904299476557
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.7110567859178264,
+              0.8267039962966293
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.16406433357297354,
+              0.3592988454675947
+            ],
+            "1w_mae_avg": [
+              0.6242659719318039,
+              0.8795549398239413
+            ],
+            "2w_depression_mae": [
+              0.6438103636031618,
+              0.9102546250890323
+            ],
+            "2w_depression_auroc": [
+              0.8080620065985489,
+              0.9356649742707088
+            ],
+            "2w_depression_auprc": [
+              0.33862224546721686,
+              0.8465781936245446
+            ],
+            "2w_depression_onset_auroc": [
+              0.7295337407555615,
+              0.8540045762387581
+            ],
+            "2w_depression_onset_auprc": [
+              0.18477618912749857,
+              0.34980614979353086
+            ],
+            "2w_anxiety_mae": [
+              0.6867083891303548,
+              0.9421145462258046
+            ],
+            "2w_anxiety_auroc": [
+              0.7961465387102326,
+              0.9227068809341541
+            ],
+            "2w_anxiety_auprc": [
+              0.34044617579290565,
+              0.8007724014721738
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.7319545439569839,
+              0.8254102600439813
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.18435749544161933,
+              0.3413197404018905
+            ],
+            "2w_mae_avg": [
+              0.6665953421821476,
+              0.9255258245053773
+            ],
+            "4w_depression_mae": [
+              0.7224727443423552,
+              1.0119919619542752
+            ],
+            "4w_depression_auroc": [
+              0.7641853154753206,
+              0.9270282402798915
+            ],
+            "4w_depression_auprc": [
+              0.26687460268505275,
+              0.8158877478151624
+            ],
+            "4w_depression_onset_auroc": [
+              0.6805019244173184,
+              0.8363647616620029
+            ],
+            "4w_depression_onset_auprc": [
+              0.1561234449156983,
+              0.34286106426946145
+            ],
+            "4w_anxiety_mae": [
+              0.7412130936788308,
+              1.0304018688918215
+            ],
+            "4w_anxiety_auroc": [
+              0.7418194472732216,
+              0.9097815232473003
+            ],
+            "4w_anxiety_auprc": [
+              0.21999314641194653,
+              0.8055725015026506
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.6751770521346455,
+              0.8170509683284993
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.13397989009591196,
+              0.313584235675064
+            ],
+            "4w_mae_avg": [
+              0.735421822331168,
+              1.0167556095317787
+            ],
+            "8w_depression_mae": [
+              0.7861389328222211,
+              1.1018510654573972
+            ],
+            "8w_depression_auroc": [
+              0.7024697797917956,
+              0.9055169182008956
+            ],
+            "8w_depression_auprc": [
+              0.21173066267353643,
+              0.8114921032867127
+            ],
+            "8w_depression_onset_auroc": [
+              0.6430876724714286,
+              0.8050051723189636
+            ],
+            "8w_depression_onset_auprc": [
+              0.1585216796332529,
+              0.4140515382984512
+            ],
+            "8w_anxiety_mae": [
+              0.8086748913788615,
+              1.1181688945964672
+            ],
+            "8w_anxiety_auroc": [
+              0.653198441842737,
+              0.8756814741103515
+            ],
+            "8w_anxiety_auprc": [
+              0.16336331122277814,
+              0.7762567352012276
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.6070669235465654,
+              0.7608021305611137
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.1326341479971726,
+              0.291552838342925
+            ],
+            "8w_mae_avg": [
+              0.8007882055934665,
+              1.1067961650423335
+            ]
+          },
+          "grudt": {
+            "1w_depression_mae": [
+              0.6343430899891873,
+              0.8877856028554375
+            ],
+            "1w_depression_auroc": [
+              0.83845766015642,
+              0.9477421524977357
+            ],
+            "1w_depression_auprc": [
+              0.4053625309296391,
+              0.8801383904940677
+            ],
+            "1w_depression_onset_auroc": [
+              0.7422585228420975,
+              0.8499838688121519
+            ],
+            "1w_depression_onset_auprc": [
+              0.16033025450639232,
+              0.32398988318209554
+            ],
+            "1w_anxiety_mae": [
+              0.6628208987597222,
+              0.9413846334857598
+            ],
+            "1w_anxiety_auroc": [
+              0.7955052786330754,
+              0.9279480356310497
+            ],
+            "1w_anxiety_auprc": [
+              0.3086855991276845,
+              0.8246739725925941
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.7109243236820747,
+              0.8281821980514633
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.15517953193199702,
+              0.34469720837138673
+            ],
+            "1w_mae_avg": [
+              0.6485000505459716,
+              0.9097968642625023
+            ],
+            "2w_depression_mae": [
+              0.6645436378063465,
+              0.9285475089714335
+            ],
+            "2w_depression_auroc": [
+              0.8118812295075755,
+              0.9378365473986482
+            ],
+            "2w_depression_auprc": [
+              0.3384723280160517,
+              0.847445866517689
+            ],
+            "2w_depression_onset_auroc": [
+              0.7369656113877654,
+              0.8629142966949445
+            ],
+            "2w_depression_onset_auprc": [
+              0.18713167755802665,
+              0.360327568065658
+            ],
+            "2w_anxiety_mae": [
+              0.7091865260320567,
+              0.9744963635465006
+            ],
+            "2w_anxiety_auroc": [
+              0.7967678689372727,
+              0.9226063031625272
+            ],
+            "2w_anxiety_auprc": [
+              0.3346771262543256,
+              0.8075037698871865
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.7275224410489192,
+              0.8307989202760746
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.17911428648691896,
+              0.3512051886134245
+            ],
+            "2w_mae_avg": [
+              0.6874739132382294,
+              0.9474454787186016
+            ],
+            "4w_depression_mae": [
+              0.7355413346400118,
+              1.019623462139512
+            ],
+            "4w_depression_auroc": [
+              0.7645225163796744,
+              0.9268800976544946
+            ],
+            "4w_depression_auprc": [
+              0.26750518959697805,
+              0.8264647078120059
+            ],
+            "4w_depression_onset_auroc": [
+              0.6828343234008344,
+              0.838990307059847
+            ],
+            "4w_depression_onset_auprc": [
+              0.15833466265450377,
+              0.342622971345596
+            ],
+            "4w_anxiety_mae": [
+              0.762808856200283,
+              1.0527007283215386
+            ],
+            "4w_anxiety_auroc": [
+              0.7341263495467324,
+              0.9065251895166175
+            ],
+            "4w_anxiety_auprc": [
+              0.21554981365666967,
+              0.7819780315651857
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.6634994632947253,
+              0.8058410678124572
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.12255167087373808,
+              0.31029496350386093
+            ],
+            "4w_mae_avg": [
+              0.7495976963886459,
+              1.0278338029719187
+            ],
+            "8w_depression_mae": [
+              0.8044084417427848,
+              1.112167028198074
+            ],
+            "8w_depression_auroc": [
+              0.6923266079282666,
+              0.9032538361953546
+            ],
+            "8w_depression_auprc": [
+              0.21274680955908465,
+              0.8145408488327045
+            ],
+            "8w_depression_onset_auroc": [
+              0.6310108625256093,
+              0.7960851843245105
+            ],
+            "8w_depression_onset_auprc": [
+              0.14703140224023736,
+              0.39142446923838325
+            ],
+            "8w_anxiety_mae": [
+              0.8309029076940687,
+              1.13683344282933
+            ],
+            "8w_anxiety_auroc": [
+              0.6351297824736105,
+              0.8704122843878407
+            ],
+            "8w_anxiety_auprc": [
+              0.15502755734853396,
+              0.7616092947225765
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.5848512226609823,
+              0.7410057307894863
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.1233955726762587,
+              0.2872058682395361
+            ],
+            "8w_mae_avg": [
+              0.8157545053427199,
+              1.1154586481480495
+            ]
+          },
+          "odernn": {
+            "1w_depression_mae": [
+              0.631140173214115,
+              0.8945142862703361
+            ],
+            "1w_depression_auroc": [
+              0.8402109757408218,
+              0.9470855199011478
+            ],
+            "1w_depression_auprc": [
+              0.413135214887773,
+              0.8777903719793809
+            ],
+            "1w_depression_onset_auroc": [
+              0.7449752736866004,
+              0.8490984615932212
+            ],
+            "1w_depression_onset_auprc": [
+              0.15837353425213566,
+              0.32129352850229503
+            ],
+            "1w_anxiety_mae": [
+              0.6571827532652429,
+              0.9589488082937679
+            ],
+            "1w_anxiety_auroc": [
+              0.7950183166764648,
+              0.9272496902478932
+            ],
+            "1w_anxiety_auprc": [
+              0.30811031079686696,
+              0.8275277490160948
+            ],
+            "1w_anxiety_onset_auroc": [
+              0.7093742458558265,
+              0.8271758754345666
+            ],
+            "1w_anxiety_onset_auprc": [
+              0.15077408190155112,
+              0.32778764986574455
+            ],
+            "1w_mae_avg": [
+              0.6475815614408319,
+              0.9220787150713281
+            ],
+            "2w_depression_mae": [
+              0.6603379241999483,
+              0.931839070805426
+            ],
+            "2w_depression_auroc": [
+              0.8130023508564582,
+              0.9379553898253288
+            ],
+            "2w_depression_auprc": [
+              0.34129846870942826,
+              0.845220634663911
+            ],
+            "2w_depression_onset_auroc": [
+              0.7357804317829142,
+              0.8636084866802799
+            ],
+            "2w_depression_onset_auprc": [
+              0.18676403291768792,
+              0.363811671361753
+            ],
+            "2w_anxiety_mae": [
+              0.7043419993118732,
+              0.9878556204401738
+            ],
+            "2w_anxiety_auroc": [
+              0.7974758446077497,
+              0.9227317386947679
+            ],
+            "2w_anxiety_auprc": [
+              0.33443930124381543,
+              0.8132601051268654
+            ],
+            "2w_anxiety_onset_auroc": [
+              0.7291119449592278,
+              0.8316236372705176
+            ],
+            "2w_anxiety_onset_auprc": [
+              0.17798994185951217,
+              0.3442260391040111
+            ],
+            "2w_mae_avg": [
+              0.6839735138588238,
+              0.9566267419674718
+            ],
+            "4w_depression_mae": [
+              0.727511312718191,
+              1.0227268837106998
+            ],
+            "4w_depression_auroc": [
+              0.7664813725487358,
+              0.9277021064958033
+            ],
+            "4w_depression_auprc": [
+              0.2735307064208269,
+              0.8307090681114216
+            ],
+            "4w_depression_onset_auroc": [
+              0.6875241169085564,
+              0.8375875447711211
+            ],
+            "4w_depression_onset_auprc": [
+              0.15713632482782977,
+              0.33240534413998357
+            ],
+            "4w_anxiety_mae": [
+              0.7589320198876477,
+              1.0658792486424777
+            ],
+            "4w_anxiety_auroc": [
+              0.7320239598265783,
+              0.9075153205402899
+            ],
+            "4w_anxiety_auprc": [
+              0.21267087497682016,
+              0.7977363468611036
+            ],
+            "4w_anxiety_onset_auroc": [
+              0.6603816821037017,
+              0.8048410327699673
+            ],
+            "4w_anxiety_onset_auprc": [
+              0.11645482687650092,
+              0.2930930423850548
+            ],
+            "4w_mae_avg": [
+              0.7445284852955278,
+              1.0373835216600387
+            ],
+            "8w_depression_mae": [
+              0.7979416625438549,
+              1.11774068811144
+            ],
+            "8w_depression_auroc": [
+              0.6919051300208702,
+              0.9025827357462808
+            ],
+            "8w_depression_auprc": [
+              0.2113805664199248,
+              0.8125225599841474
+            ],
+            "8w_depression_onset_auroc": [
+              0.6296272663211436,
+              0.7969673108254949
+            ],
+            "8w_depression_onset_auprc": [
+              0.14709595681939405,
+              0.39062260288967965
+            ],
+            "8w_anxiety_mae": [
+              0.8211626229026485,
+              1.1481848673733783
+            ],
+            "8w_anxiety_auroc": [
+              0.6315186099787049,
+              0.8698096645168302
+            ],
+            "8w_anxiety_auprc": [
+              0.15381054989512213,
+              0.7599141020535685
+            ],
+            "8w_anxiety_onset_auroc": [
+              0.5863187563402179,
+              0.7394692662087521
+            ],
+            "8w_anxiety_onset_auprc": [
+              0.1250379913852459,
+              0.2813255314974588
+            ],
+            "8w_mae_avg": [
+              0.8091392927722193,
+              1.1216961419447684
+            ]
+          }
+        },
+        "diff": {
+          "odernn-grudt": {
+            "1w_depression_mae": {
+              "point": 0.000622025417330696,
+              "ci": [
+                -0.006318901427692108,
+                0.008834968510145839
+              ]
+            },
+            "1w_depression_auroc": {
+              "point": 0.00015474127259218484,
+              "ci": [
+                -0.0012705652632531705,
+                0.002408526828869667
+              ]
+            },
+            "1w_depression_auprc": {
+              "point": -0.0007254833818427509,
+              "ci": [
+                -0.008848037941912046,
+                0.015610842405715987
+              ]
+            },
+            "1w_depression_onset_auroc": {
+              "point": 0.0011872863423130209,
+              "ci": [
+                -0.0027856698939667025,
+                0.004553461315160443
+              ]
+            },
+            "1w_depression_onset_auprc": {
+              "point": -0.002905625060293099,
+              "ci": [
+                -0.016221181707918416,
+                0.007219531119208449
+              ]
+            },
+            "1w_anxiety_mae": {
+              "point": 0.005593652421465367,
+              "ci": [
+                -0.008222546092816776,
+                0.02215986733397992
+              ]
+            },
+            "1w_anxiety_auroc": {
+              "point": -1.4486764017718201e-05,
+              "ci": [
+                -0.002555909854839242,
+                0.0029579037060894734
+              ]
+            },
+            "1w_anxiety_auprc": {
+              "point": 0.005850874262321115,
+              "ci": [
+                -0.009959957873912257,
+                0.012561484124784344
+              ]
+            },
+            "1w_anxiety_onset_auroc": {
+              "point": -0.00046089902949753014,
+              "ci": [
+                -0.006032773007815281,
+                0.005398536651451748
+              ]
+            },
+            "1w_anxiety_onset_auprc": {
+              "point": -0.010294576238017161,
+              "ci": [
+                -0.023167116502613914,
+                -0.0003030380159498195
+              ]
+            },
+            "1w_mae_avg": {
+              "point": 0.0031078389193980316,
+              "ci": [
+                -0.006616505775697279,
+                0.01531176065489263
+              ]
+            },
+            "2w_depression_mae": {
+              "point": -0.0013509364014819836,
+              "ci": [
+                -0.007046743754213871,
+                0.006413281236249293
+              ]
+            },
+            "2w_depression_auroc": {
+              "point": 0.0001489467714065329,
+              "ci": [
+                -0.001224953572873741,
+                0.0022019454393089103
+              ]
+            },
+            "2w_depression_auprc": {
+              "point": -0.0023711965738297813,
+              "ci": [
+                -0.010522524209930783,
+                0.009039519128717376
+              ]
+            },
+            "2w_depression_onset_auroc": {
+              "point": 0.0009310662884391974,
+              "ci": [
+                -0.002242863701332365,
+                0.004699339607780325
+              ]
+            },
+            "2w_depression_onset_auprc": {
+              "point": 0.0008045833453250162,
+              "ci": [
+                -0.005060186302360621,
+                0.007022059951469192
+              ]
+            },
+            "2w_anxiety_mae": {
+              "point": 0.0013970384798883684,
+              "ci": [
+                -0.011589527952008757,
+                0.018258248809100503
+              ]
+            },
+            "2w_anxiety_auroc": {
+              "point": 0.0004434472978253057,
+              "ci": [
+                -0.0017398425601947126,
+                0.003079344575226521
+              ]
+            },
+            "2w_anxiety_auprc": {
+              "point": 0.004444587266120181,
+              "ci": [
+                -0.005241648826342882,
+                0.009256447193005684
+              ]
+            },
+            "2w_anxiety_onset_auroc": {
+              "point": 0.0013638744115316292,
+              "ci": [
+                -0.0027325537917305934,
+                0.006173781233658682
+              ]
+            },
+            "2w_anxiety_onset_auprc": {
+              "point": -0.007880468862087542,
+              "ci": [
+                -0.01558972616388893,
+                0.005537402262153646
+              ]
+            },
+            "2w_mae_avg": {
+              "point": 2.3051039203192403e-05,
+              "ci": [
+                -0.008957222759961239,
+                0.01173783729865325
+              ]
+            },
+            "4w_depression_mae": {
+              "point": -0.003201522191956574,
+              "ci": [
+                -0.010930763272480215,
+                0.006464766142860746
+              ]
+            },
+            "4w_depression_auroc": {
+              "point": 0.0008138073815585622,
+              "ci": [
+                -0.0016409067777749336,
+                0.004235350843115905
+              ]
+            },
+            "4w_depression_auprc": {
+              "point": 0.0027677152618458267,
+              "ci": [
+                -0.009852207216550928,
+                0.012577232818285444
+              ]
+            },
+            "4w_depression_onset_auroc": {
+              "point": 0.001568578415027222,
+              "ci": [
+                -0.0037368700826887675,
+                0.007254403654126748
+              ]
+            },
+            "4w_depression_onset_auprc": {
+              "point": -0.002219331725034135,
+              "ci": [
+                -0.01761721841288556,
+                0.009252852337582506
+              ]
+            },
+            "4w_anxiety_mae": {
+              "point": 0.00256798586215623,
+              "ci": [
+                -0.010405875916409266,
+                0.019175765927482987
+              ]
+            },
+            "4w_anxiety_auroc": {
+              "point": -0.001354469809209169,
+              "ci": [
+                -0.006025040191854264,
+                0.0016318031302732284
+              ]
+            },
+            "4w_anxiety_auprc": {
+              "point": 0.009319351497331096,
+              "ci": [
+                -0.010773566422377414,
+                0.0224334346054256
+              ]
+            },
+            "4w_anxiety_onset_auroc": {
+              "point": -0.0023014158146191788,
+              "ci": [
+                -0.009505380194033738,
+                0.0034398094676975095
+              ]
+            },
+            "4w_anxiety_onset_auprc": {
+              "point": -0.010672918126345743,
+              "ci": [
+                -0.02455674037250106,
+                -5.428677856642623e-05
+              ]
+            },
+            "4w_mae_avg": {
+              "point": -0.0003167681649001164,
+              "ci": [
+                -0.010371829839742473,
+                0.012051333278813147
+              ]
+            },
+            "8w_depression_mae": {
+              "point": -0.0002508414345736565,
+              "ci": [
+                -0.008570589805337609,
+                0.009033463707568988
+              ]
+            },
+            "8w_depression_auroc": {
+              "point": -0.0010557214955195793,
+              "ci": [
+                -0.004452100723679381,
+                0.001946683614510871
+              ]
+            },
+            "8w_depression_auprc": {
+              "point": -0.005289714326709549,
+              "ci": [
+                -0.012473666442040275,
+                0.004052579740907372
+              ]
+            },
+            "8w_depression_onset_auroc": {
+              "point": -0.0011597190902647991,
+              "ci": [
+                -0.007210976145885423,
+                0.003771288845704718
+              ]
+            },
+            "8w_depression_onset_auprc": {
+              "point": -0.001020425573314554,
+              "ci": [
+                -0.008931459939229511,
+                0.0038086070376315236
+              ]
+            },
+            "8w_anxiety_mae": {
+              "point": -0.0016185987794032908,
+              "ci": [
+                -0.014994489098139123,
+                0.015932527060672167
+              ]
+            },
+            "8w_anxiety_auroc": {
+              "point": -0.000460784149025284,
+              "ci": [
+                -0.004408277967485161,
+                0.0031382288470932825
+              ]
+            },
+            "8w_anxiety_auprc": {
+              "point": 0.009018492213840434,
+              "ci": [
+                -0.008012927280984438,
+                0.018544712026413643
+              ]
+            },
+            "8w_anxiety_onset_auroc": {
+              "point": -0.0005396331926944553,
+              "ci": [
+                -0.007384061813416059,
+                0.005707968932354428
+              ]
+            },
+            "8w_anxiety_onset_auprc": {
+              "point": 0.0012370935533879412,
+              "ci": [
+                -0.011671913022829668,
+                0.0071796137898247295
+              ]
+            },
+            "8w_mae_avg": {
+              "point": -0.0009347201069884736,
+              "ci": [
+                -0.010888829027140987,
+                0.011847303860687034
+              ]
+            }
+          },
+          "odernn-persistence": {
+            "1w_depression_mae": {
+              "point": 0.14998143022741373,
+              "ci": [
+                0.051484091593158046,
+                0.30326513906926716
+              ]
+            },
+            "1w_depression_auroc": {
+              "point": 0.01500760150515934,
+              "ci": [
+                0.006353318043438547,
+                0.027685296834994096
+              ]
+            },
+            "1w_depression_auprc": {
+              "point": 0.07847460128062744,
+              "ci": [
+                0.03921026660406197,
+                0.09992910348872475
+              ]
+            },
+            "1w_depression_onset_auroc": {
+              "point": 0.04795626013916021,
+              "ci": [
+                0.015880478068479427,
+                0.07809737144674717
+              ]
+            },
+            "1w_depression_onset_auprc": {
+              "point": 0.10763622587764271,
+              "ci": [
+                0.05670821213944669,
+                0.18169557662245855
+              ]
+            },
+            "1w_anxiety_mae": {
+              "point": 0.11598002756857706,
+              "ci": [
+                0.018009266906265704,
+                0.2715734923228873
+              ]
+            },
+            "1w_anxiety_auroc": {
+              "point": 0.019006361056079668,
+              "ci": [
+                0.0048003189986514675,
+                0.031626494939789786
+              ]
+            },
+            "1w_anxiety_auprc": {
+              "point": 0.07265256613589854,
+              "ci": [
+                0.010140406826372069,
+                0.10034951682540441
+              ]
+            },
+            "1w_anxiety_onset_auroc": {
+              "point": 0.05125092628005923,
+              "ci": [
+                0.015222130657833144,
+                0.09118924669514497
+              ]
+            },
+            "1w_anxiety_onset_auprc": {
+              "point": 0.12014785385096191,
+              "ci": [
+                0.054400883946222126,
+                0.19312062336844185
+              ]
+            },
+            "1w_mae_avg": {
+              "point": 0.1329807288979954,
+              "ci": [
+                0.03813970856296124,
+                0.28777189143228155
+              ]
+            },
+            "2w_depression_mae": {
+              "point": 0.101889185498791,
+              "ci": [
+                -0.0004680791299877445,
+                0.25048056823059456
+              ]
+            },
+            "2w_depression_auroc": {
+              "point": 0.028728704852166387,
+              "ci": [
+                0.01859201586096088,
+                0.045143063783751734
+              ]
+            },
+            "2w_depression_auprc": {
+              "point": 0.09897031580496907,
+              "ci": [
+                0.04948875441603392,
+                0.11992324217160338
+              ]
+            },
+            "2w_depression_onset_auroc": {
+              "point": 0.07035496539681985,
+              "ci": [
+                0.04317867772336349,
+                0.098167291973878
+              ]
+            },
+            "2w_depression_onset_auprc": {
+              "point": 0.13166416750425342,
+              "ci": [
+                0.0818699521912311,
+                0.19553536693013826
+              ]
+            },
+            "2w_anxiety_mae": {
+              "point": 0.0790758797515364,
+              "ci": [
+                -0.025219971512666167,
+                0.23413279721577082
+              ]
+            },
+            "2w_anxiety_auroc": {
+              "point": 0.030106394422223293,
+              "ci": [
+                0.019248955549958358,
+                0.044951969939676505
+              ]
+            },
+            "2w_anxiety_auprc": {
+              "point": 0.09672677661557028,
+              "ci": [
+                0.03900347318232208,
+                0.11921410983532534
+              ]
+            },
+            "2w_anxiety_onset_auroc": {
+              "point": 0.07248768452212584,
+              "ci": [
+                0.041656744468429326,
+                0.10704178030417755
+              ]
+            },
+            "2w_anxiety_onset_auprc": {
+              "point": 0.1306338065383527,
+              "ci": [
+                0.06664378199696641,
+                0.2056997229548729
+              ]
+            },
+            "2w_mae_avg": {
+              "point": 0.0904825326251637,
+              "ci": [
+                -0.009273152697124568,
+                0.2408940772471848
+              ]
+            },
+            "4w_depression_mae": {
+              "point": 0.09648224732599053,
+              "ci": [
+                -0.011692241212310862,
+                0.25029816098406377
+              ]
+            },
+            "4w_depression_auroc": {
+              "point": 0.02516319550691526,
+              "ci": [
+                0.01210563746720949,
+                0.04528933277288171
+              ]
+            },
+            "4w_depression_auprc": {
+              "point": 0.08425286646755592,
+              "ci": [
+                0.032867846879626475,
+                0.10447225278876172
+              ]
+            },
+            "4w_depression_onset_auroc": {
+              "point": 0.06049863843503389,
+              "ci": [
+                0.027600064738393885,
+                0.09426751274687702
+              ]
+            },
+            "4w_depression_onset_auprc": {
+              "point": 0.10902065288824675,
+              "ci": [
+                0.07161697424112262,
+                0.15028644338649644
+              ]
+            },
+            "4w_anxiety_mae": {
+              "point": 0.052892430322394324,
+              "ci": [
+                -0.051212632422027934,
+                0.209574667300289
+              ]
+            },
+            "4w_anxiety_auroc": {
+              "point": 0.03245843919419045,
+              "ci": [
+                0.019471364176051022,
+                0.04885682772443341
+              ]
+            },
+            "4w_anxiety_auprc": {
+              "point": 0.10721133415206707,
+              "ci": [
+                0.024398181706538145,
+                0.12584543669991238
+              ]
+            },
+            "4w_anxiety_onset_auroc": {
+              "point": 0.06808025043774701,
+              "ci": [
+                0.035152022187319026,
+                0.09774534662248327
+              ]
+            },
+            "4w_anxiety_onset_auprc": {
+              "point": 0.08280483096153862,
+              "ci": [
+                0.0335227457788086,
+                0.1398545486754572
+              ]
+            },
+            "4w_mae_avg": {
+              "point": 0.07468733882419243,
+              "ci": [
+                -0.02705637408710847,
+                0.23271455681918152
+              ]
+            },
+            "8w_depression_mae": {
+              "point": 0.07845016229565782,
+              "ci": [
+                -0.038272759438579336,
+                0.24594343013425388
+              ]
+            },
+            "8w_depression_auroc": {
+              "point": 0.013216545931037715,
+              "ci": [
+                -0.005722688192510713,
+                0.02668631468077461
+              ]
+            },
+            "8w_depression_auprc": {
+              "point": 0.09092997789784774,
+              "ci": [
+                0.019165574782820192,
+                0.11568984147763806
+              ]
+            },
+            "8w_depression_onset_auroc": {
+              "point": 0.021255321574244257,
+              "ci": [
+                -0.013610115624812383,
+                0.05117073637071194
+              ]
+            },
+            "8w_depression_onset_auprc": {
+              "point": 0.08792434647400199,
+              "ci": [
+                0.037617669496041596,
+                0.16503296236034035
+              ]
+            },
+            "8w_anxiety_mae": {
+              "point": 0.009262072362981044,
+              "ci": [
+                -0.10162539259071726,
+                0.1712157495875039
+              ]
+            },
+            "8w_anxiety_auroc": {
+              "point": 0.03977323180082604,
+              "ci": [
+                0.024164028185391477,
+                0.05766422269544641
+              ]
+            },
+            "8w_anxiety_auprc": {
+              "point": 0.10400773889315013,
+              "ci": [
+                0.025916792660223023,
+                0.12345136428193855
+              ]
+            },
+            "8w_anxiety_onset_auroc": {
+              "point": 0.07152348478879089,
+              "ci": [
+                0.035254183583954685,
+                0.10904437543619137
+              ]
+            },
+            "8w_anxiety_onset_auprc": {
+              "point": 0.08077560349601111,
+              "ci": [
+                0.034050394369837214,
+                0.13640728875731528
+              ]
+            },
+            "8w_mae_avg": {
+              "point": 0.04385611732931949,
+              "ci": [
+                -0.06257055679615493,
+                0.2041208033133245
+              ]
+            }
+          },
+          "grudt-persistence": {
+            "1w_depression_mae": {
+              "point": 0.14935940481008303,
+              "ci": [
+                0.05281116186130433,
+                0.2963037763021505
+              ]
+            },
+            "1w_depression_auroc": {
+              "point": 0.014852860232567155,
+              "ci": [
+                0.005768255785942373,
+                0.027671962958869034
+              ]
+            },
+            "1w_depression_auprc": {
+              "point": 0.0792000846624702,
+              "ci": [
+                0.037811432841143286,
+                0.0985025574992138
+              ]
+            },
+            "1w_depression_onset_auroc": {
+              "point": 0.04676897379684719,
+              "ci": [
+                0.013831481822313876,
+                0.0792119230877603
+              ]
+            },
+            "1w_depression_onset_auprc": {
+              "point": 0.11054185093793581,
+              "ci": [
+                0.059655862676487044,
+                0.18546909496629876
+              ]
+            },
+            "1w_anxiety_mae": {
+              "point": 0.11038637514711169,
+              "ci": [
+                0.017838836686106984,
+                0.25282176687112506
+              ]
+            },
+            "1w_anxiety_auroc": {
+              "point": 0.019020847820097386,
+              "ci": [
+                0.005052189047504707,
+                0.030856951852330138
+              ]
+            },
+            "1w_anxiety_auprc": {
+              "point": 0.06680169187357743,
+              "ci": [
+                0.010931525812561634,
+                0.10005652129973051
+              ]
+            },
+            "1w_anxiety_onset_auroc": {
+              "point": 0.05171182530955676,
+              "ci": [
+                0.015698554712200788,
+                0.0923243430298623
+              ]
+            },
+            "1w_anxiety_onset_auprc": {
+              "point": 0.13044243008897907,
+              "ci": [
+                0.060117141944077766,
+                0.2113765659862788
+              ]
+            },
+            "1w_mae_avg": {
+              "point": 0.12987288997859736,
+              "ci": [
+                0.03820892771354946,
+                0.27511184592004856
+              ]
+            },
+            "2w_depression_mae": {
+              "point": 0.10324012190027299,
+              "ci": [
+                0.0038735451959990177,
+                0.2462708531763412
+              ]
+            },
+            "2w_depression_auroc": {
+              "point": 0.028579758080759854,
+              "ci": [
+                0.01856893049842171,
+                0.04423052298424144
+              ]
+            },
+            "2w_depression_auprc": {
+              "point": 0.10134151237879885,
+              "ci": [
+                0.05152850022395046,
+                0.11950238540753949
+              ]
+            },
+            "2w_depression_onset_auroc": {
+              "point": 0.06942389910838065,
+              "ci": [
+                0.04353964742812095,
+                0.09736276972685125
+              ]
+            },
+            "2w_depression_onset_auprc": {
+              "point": 0.1308595841589284,
+              "ci": [
+                0.08147050978927663,
+                0.1933166222392571
+              ]
+            },
+            "2w_anxiety_mae": {
+              "point": 0.07767884127164804,
+              "ci": [
+                -0.023639611248706706,
+                0.21932989245190118
+              ]
+            },
+            "2w_anxiety_auroc": {
+              "point": 0.029662947124397987,
+              "ci": [
+                0.019728378600899137,
+                0.04301675240904666
+              ]
+            },
+            "2w_anxiety_auprc": {
+              "point": 0.0922821893494501,
+              "ci": [
+                0.04214354972992872,
+                0.11293685791511715
+              ]
+            },
+            "2w_anxiety_onset_auroc": {
+              "point": 0.07112381011059421,
+              "ci": [
+                0.04144839807426198,
+                0.10392822462677492
+              ]
+            },
+            "2w_anxiety_onset_auprc": {
+              "point": 0.13851427540044023,
+              "ci": [
+                0.07084471722023518,
+                0.21213847917499518
+              ]
+            },
+            "2w_mae_avg": {
+              "point": 0.09045948158596051,
+              "ci": [
+                -0.00578735679792661,
+                0.23242536487137933
+              ]
+            },
+            "4w_depression_mae": {
+              "point": 0.09968376951794711,
+              "ci": [
+                -0.005965304118118206,
+                0.24974990050507057
+              ]
+            },
+            "4w_depression_auroc": {
+              "point": 0.024349388125356697,
+              "ci": [
+                0.010923163580621615,
+                0.04453921498185714
+              ]
+            },
+            "4w_depression_auprc": {
+              "point": 0.0814851512057101,
+              "ci": [
+                0.03378654272553159,
+                0.09692953878985505
+              ]
+            },
+            "4w_depression_onset_auroc": {
+              "point": 0.05893006002000667,
+              "ci": [
+                0.024975888486121114,
+                0.09581577394481176
+              ]
+            },
+            "4w_depression_onset_auprc": {
+              "point": 0.11123998461328088,
+              "ci": [
+                0.07107172783807825,
+                0.16187495401097113
+              ]
+            },
+            "4w_anxiety_mae": {
+              "point": 0.050324444460238094,
+              "ci": [
+                -0.051502322323702755,
+                0.20008348343295682
+              ]
+            },
+            "4w_anxiety_auroc": {
+              "point": 0.033812909003399616,
+              "ci": [
+                0.021263751397095586,
+                0.05044969882344315
+              ]
+            },
+            "4w_anxiety_auprc": {
+              "point": 0.09789198265473598,
+              "ci": [
+                0.028584791156031845,
+                0.12210922130593045
+              ]
+            },
+            "4w_anxiety_onset_auroc": {
+              "point": 0.07038166625236619,
+              "ci": [
+                0.03971019588084098,
+                0.10075617015615042
+              ]
+            },
+            "4w_anxiety_onset_auprc": {
+              "point": 0.09347774908788437,
+              "ci": [
+                0.04029012931747829,
+                0.16020899411547318
+              ]
+            },
+            "4w_mae_avg": {
+              "point": 0.07500410698909254,
+              "ci": [
+                -0.022068993954627265,
+                0.22161523848910347
+              ]
+            },
+            "8w_depression_mae": {
+              "point": 0.07870100373023148,
+              "ci": [
+                -0.03452110941624058,
+                0.2364075230682196
+              ]
+            },
+            "8w_depression_auroc": {
+              "point": 0.014272267426557295,
+              "ci": [
+                -0.004666173972697951,
+                0.026635020604318098
+              ]
+            },
+            "8w_depression_auprc": {
+              "point": 0.09621969222455728,
+              "ci": [
+                0.024096341483243734,
+                0.11783834050435353
+              ]
+            },
+            "8w_depression_onset_auroc": {
+              "point": 0.022415040664509056,
+              "ci": [
+                -0.009998593418064496,
+                0.051338163981279494
+              ]
+            },
+            "8w_depression_onset_auprc": {
+              "point": 0.08894477204731654,
+              "ci": [
+                0.03751241102333333,
+                0.1687264120876162
+              ]
+            },
+            "8w_anxiety_mae": {
+              "point": 0.010880671142384335,
+              "ci": [
+                -0.09796133661544489,
+                0.15892686660960909
+              ]
+            },
+            "8w_anxiety_auroc": {
+              "point": 0.04023401594985132,
+              "ci": [
+                0.025327973144189914,
+                0.05812274533227919
+              ]
+            },
+            "8w_anxiety_auprc": {
+              "point": 0.09498924667930969,
+              "ci": [
+                0.027123270171046196,
+                0.12522394491571806
+              ]
+            },
+            "8w_anxiety_onset_auroc": {
+              "point": 0.07206311798148535,
+              "ci": [
+                0.03606897814215128,
+                0.10898638889221617
+              ]
+            },
+            "8w_anxiety_onset_auprc": {
+              "point": 0.07953850994262317,
+              "ci": [
+                0.0328806475945902,
+                0.14035128426446905
+              ]
+            },
+            "8w_mae_avg": {
+              "point": 0.04479083743630796,
+              "ci": [
+                -0.06074841460192831,
+                0.19610064950926862
+              ]
+            }
+          },
+          "odernn-mean": {
+            "1w_depression_mae": {
+              "point": -0.43376809808262373,
+              "ci": [
+                -0.6420071507903635,
+                -0.28223584065704843
+              ]
+            },
+            "1w_depression_auroc": {
+              "point": 0.4094587073553514,
+              "ci": [
+                0.3402109757408218,
+                0.44708551990114775
+              ]
+            },
+            "1w_depression_auprc": {
+              "point": 0.5817490844574389,
+              "ci": [
+                0.3276751407037829,
+                0.6771003963677352
+              ]
+            },
+            "1w_depression_onset_auroc": {
+              "point": 0.3023851778941037,
+              "ci": [
+                0.24497527368660038,
+                0.3490984615932213
+              ]
+            },
+            "1w_depression_onset_auprc": {
+              "point": 0.1784845025282842,
+              "ci": [
+                0.10984427783428113,
+                0.26029295403509817
+              ]
+            },
+            "1w_anxiety_mae": {
+              "point": -0.3383312597593662,
+              "ci": [
+                -0.4859215716326667,
+                -0.2077903295836059
+              ]
+            },
+            "1w_anxiety_auroc": {
+              "point": 0.38296471352287487,
+              "ci": [
+                0.2950183166764648,
+                0.4272496902478932
+              ]
+            },
+            "1w_anxiety_auprc": {
+              "point": 0.5103679733667321,
+              "ci": [
+                0.22859698554097388,
+                0.6270768991082087
+              ]
+            },
+            "1w_anxiety_onset_auroc": {
+              "point": 0.2747219665822058,
+              "ci": [
+                0.20937424585582648,
+                0.32717587543456667
+              ]
+            },
+            "1w_anxiety_onset_auprc": {
+              "point": 0.17604425089636153,
+              "ci": [
+                0.09869830237894915,
+                0.2564937752210212
+              ]
+            },
+            "1w_mae_avg": {
+              "point": -0.38604967892099495,
+              "ci": [
+                -0.5558153489631115,
+                -0.24694623915900438
+              ]
+            },
+            "2w_depression_mae": {
+              "point": -0.4007486926644743,
+              "ci": [
+                -0.592775930478033,
+                -0.25316262503559367
+              ]
+            },
+            "2w_depression_auroc": {
+              "point": 0.39339174591058956,
+              "ci": [
+                0.3130023508564582,
+                0.4379553898253288
+              ]
+            },
+            "2w_depression_auprc": {
+              "point": 0.5261091941235174,
+              "ci": [
+                0.25472980424282604,
+                0.6441338890247514
+              ]
+            },
+            "2w_depression_onset_auroc": {
+              "point": 0.3121392480697053,
+              "ci": [
+                0.23578043178291416,
+                0.3636084866802799
+              ]
+            },
+            "2w_depression_onset_auprc": {
+              "point": 0.2137650929094515,
+              "ci": [
+                0.13628578156858098,
+                0.29475119662686433
+              ]
+            },
+            "2w_anxiety_mae": {
+              "point": -0.30593843064757553,
+              "ci": [
+                -0.45192571552349076,
+                -0.1726011105106228
+              ]
+            },
+            "2w_anxiety_auroc": {
+              "point": 0.3791446955361102,
+              "ci": [
+                0.29747584460774973,
+                0.42273173869476793
+              ]
+            },
+            "2w_anxiety_auprc": {
+              "point": 0.5024693924549659,
+              "ci": [
+                0.250139896709755,
+                0.6134437217665164
+              ]
+            },
+            "2w_anxiety_onset_auroc": {
+              "point": 0.28532560751223146,
+              "ci": [
+                0.22911194495922782,
+                0.3316236372705176
+              ]
+            },
+            "2w_anxiety_onset_auprc": {
+              "point": 0.18671572653683666,
+              "ci": [
+                0.11662681137358237,
+                0.2676303344509843
+              ]
+            },
+            "2w_mae_avg": {
+              "point": -0.353343561656025,
+              "ci": [
+                -0.5137329732219678,
+                -0.21485275406699975
+              ]
+            },
+            "4w_depression_mae": {
+              "point": -0.33973278096237436,
+              "ci": [
+                -0.543140187561147,
+                -0.18284959528668057
+              ]
+            },
+            "4w_depression_auroc": {
+              "point": 0.3717043513738154,
+              "ci": [
+                0.2664813725487359,
+                0.4277021064958033
+              ]
+            },
+            "4w_depression_auprc": {
+              "point": 0.48031485201381113,
+              "ci": [
+                0.18802641745866944,
+                0.6177775185650831
+              ]
+            },
+            "4w_depression_onset_auroc": {
+              "point": 0.27806213182171835,
+              "ci": [
+                0.18752411690855642,
+                0.337587544771121
+              ]
+            },
+            "4w_depression_onset_auprc": {
+              "point": 0.18325548735390562,
+              "ci": [
+                0.10504514339442715,
+                0.24575792546627767
+              ]
+            },
+            "4w_anxiety_mae": {
+              "point": -0.248066836017375,
+              "ci": [
+                -0.39725138347298783,
+                -0.11470544615540534
+              ]
+            },
+            "4w_anxiety_auroc": {
+              "point": 0.34639947562836926,
+              "ci": [
+                0.2320239598265783,
+                0.40751532054029
+              ]
+            },
+            "4w_anxiety_auprc": {
+              "point": 0.4553545720504715,
+              "ci": [
+                0.1358354712090484,
+                0.6006542610477261
+              ]
+            },
+            "4w_anxiety_onset_auroc": {
+              "point": 0.24346247667853116,
+              "ci": [
+                0.1603816821037018,
+                0.30484103276996727
+              ]
+            },
+            "4w_anxiety_onset_auprc": {
+              "point": 0.12874376898397488,
+              "ci": [
+                0.06291212291272917,
+                0.20412827719272858
+              ]
+            },
+            "4w_mae_avg": {
+              "point": -0.29389980848987474,
+              "ci": [
+                -0.4621588936375847,
+                -0.1543028016613201
+              ]
+            },
+            "8w_depression_mae": {
+              "point": -0.2692588763055366,
+              "ci": [
+                -0.49046025362873724,
+                -0.10849642541778028
+              ]
+            },
+            "8w_depression_auroc": {
+              "point": 0.32364358384545844,
+              "ci": [
+                0.19190513002087017,
+                0.4025827357462808
+              ]
+            },
+            "8w_depression_auprc": {
+              "point": 0.420154190071458,
+              "ci": [
+                0.12220509550824052,
+                0.5930855657455284
+              ]
+            },
+            "8w_depression_onset_auroc": {
+              "point": 0.22523082870354305,
+              "ci": [
+                0.1296272663211436,
+                0.2969673108254949
+              ]
+            },
+            "8w_depression_onset_auprc": {
+              "point": 0.16862921837374156,
+              "ci": [
+                0.08666830287050489,
+                0.28187067400354415
+              ]
+            },
+            "8w_anxiety_mae": {
+              "point": -0.19731449189916572,
+              "ci": [
+                -0.36508696262131346,
+                -0.060302919836447005
+              ]
+            },
+            "8w_anxiety_auroc": {
+              "point": 0.28138132048257536,
+              "ci": [
+                0.1315186099787049,
+                0.36980966451683017
+              ]
+            },
+            "8w_anxiety_auprc": {
+              "point": 0.3667835881585194,
+              "ci": [
+                0.06945339387079039,
+                0.5419777221244607
+              ]
+            },
+            "8w_anxiety_onset_auroc": {
+              "point": 0.16737463676239184,
+              "ci": [
+                0.08631875634021785,
+                0.23946926620875206
+              ]
+            },
+            "8w_anxiety_onset_auprc": {
+              "point": 0.10846387001647051,
+              "ci": [
+                0.05058673381536685,
+                0.17358155431411176
+              ]
+            },
+            "8w_mae_avg": {
+              "point": -0.2332866841023511,
+              "ci": [
+                -0.42030046901628093,
+                -0.09031169480612668
+              ]
+            }
+          },
+          "grudt-mean": {
+            "1w_depression_mae": {
+              "point": -0.43439012349995443,
+              "ci": [
+                -0.6473942418759684,
+                -0.28193661246323515
+              ]
+            },
+            "1w_depression_auroc": {
+              "point": 0.4093039660827592,
+              "ci": [
+                0.33845766015642,
+                0.44774215249773575
+              ]
+            },
+            "1w_depression_auprc": {
+              "point": 0.5824745678392816,
+              "ci": [
+                0.32193396147725895,
+                0.6801015445868301
+              ]
+            },
+            "1w_depression_onset_auroc": {
+              "point": 0.30119789155179066,
+              "ci": [
+                0.2422585228420975,
+                0.34998386881215193
+              ]
+            },
+            "1w_depression_onset_auprc": {
+              "point": 0.1813901275885773,
+              "ci": [
+                0.11169270265122368,
+                0.26195444798507317
+              ]
+            },
+            "1w_anxiety_mae": {
+              "point": -0.34392491218083154,
+              "ci": [
+                -0.5035447554401834,
+                -0.2097572255967417
+              ]
+            },
+            "1w_anxiety_auroc": {
+              "point": 0.3829792002868926,
+              "ci": [
+                0.2955052786330754,
+                0.42794803563104966
+              ]
+            },
+            "1w_anxiety_auprc": {
+              "point": 0.504517099104411,
+              "ci": [
+                0.22856281081178634,
+                0.6250842738708297
+              ]
+            },
+            "1w_anxiety_onset_auroc": {
+              "point": 0.27518286561170335,
+              "ci": [
+                0.2109243236820747,
+                0.3281821980514633
+              ]
+            },
+            "1w_anxiety_onset_auprc": {
+              "point": 0.1863388271343787,
+              "ci": [
+                0.10587349189368772,
+                0.27605015698790797
+              ]
+            },
+            "1w_mae_avg": {
+              "point": -0.389157517840393,
+              "ci": [
+                -0.5713223210917601,
+                -0.24890621703347635
+              ]
+            },
+            "2w_depression_mae": {
+              "point": -0.39939775626299234,
+              "ci": [
+                -0.599605048248096,
+                -0.25351432517201855
+              ]
+            },
+            "2w_depression_auroc": {
+              "point": 0.39324279913918303,
+              "ci": [
+                0.31188122950757546,
+                0.43783654739864813
+              ]
+            },
+            "2w_depression_auprc": {
+              "point": 0.5284803906973472,
+              "ci": [
+                0.25123619853674767,
+                0.646190636106811
+              ]
+            },
+            "2w_depression_onset_auroc": {
+              "point": 0.3112081817812661,
+              "ci": [
+                0.23696561138776534,
+                0.36291429669494446
+              ]
+            },
+            "2w_depression_onset_auprc": {
+              "point": 0.2129605095641265,
+              "ci": [
+                0.1382745080242469,
+                0.2893498416969228
+              ]
+            },
+            "2w_anxiety_mae": {
+              "point": -0.3073354691274639,
+              "ci": [
+                -0.4635821611206973,
+                -0.1708251398172236
+              ]
+            },
+            "2w_anxiety_auroc": {
+              "point": 0.3787012482382849,
+              "ci": [
+                0.2967678689372727,
+                0.42260630316252723
+              ]
+            },
+            "2w_anxiety_auprc": {
+              "point": 0.49802480518884573,
+              "ci": [
+                0.25058940354603104,
+                0.6106718830882998
+              ]
+            },
+            "2w_anxiety_onset_auroc": {
+              "point": 0.28396173310069983,
+              "ci": [
+                0.22752244104891914,
+                0.3307989202760746
+              ]
+            },
+            "2w_anxiety_onset_auprc": {
+              "point": 0.1945961953989242,
+              "ci": [
+                0.11910765121573029,
+                0.2745651441151957
+              ]
+            },
+            "2w_mae_avg": {
+              "point": -0.3533666126952282,
+              "ci": [
+                -0.5237866539769179,
+                -0.2114740682721514
+              ]
+            },
+            "4w_depression_mae": {
+              "point": -0.3365312587704178,
+              "ci": [
+                -0.5481120925843221,
+                -0.18197512215957293
+              ]
+            },
+            "4w_depression_auroc": {
+              "point": 0.37089054399225685,
+              "ci": [
+                0.2645225163796744,
+                0.4268800976544946
+              ]
+            },
+            "4w_depression_auprc": {
+              "point": 0.4775471367519653,
+              "ci": [
+                0.18249996819885647,
+                0.6147443432719701
+              ]
+            },
+            "4w_depression_onset_auroc": {
+              "point": 0.27649355340669113,
+              "ci": [
+                0.18283432340083436,
+                0.338990307059847
+              ]
+            },
+            "4w_depression_onset_auprc": {
+              "point": 0.18547481907893976,
+              "ci": [
+                0.10721942155599488,
+                0.25717961444739734
+              ]
+            },
+            "4w_anxiety_mae": {
+              "point": -0.25063482187953123,
+              "ci": [
+                -0.4123730074232534,
+                -0.11128384712010073
+              ]
+            },
+            "4w_anxiety_auroc": {
+              "point": 0.3477539454375784,
+              "ci": [
+                0.23412634954673237,
+                0.4065251895166175
+              ]
+            },
+            "4w_anxiety_auprc": {
+              "point": 0.4460352205531404,
+              "ci": [
+                0.13997479028199972,
+                0.5828809248879588
+              ]
+            },
+            "4w_anxiety_onset_auroc": {
+              "point": 0.24576389249315034,
+              "ci": [
+                0.16349946329472528,
+                0.30584106781245723
+              ]
+            },
+            "4w_anxiety_onset_auprc": {
+              "point": 0.13941668711032063,
+              "ci": [
+                0.06963100269229328,
+                0.22249541886030758
+              ]
+            },
+            "4w_mae_avg": {
+              "point": -0.2935830403249746,
+              "ci": [
+                -0.47245266410074144,
+                -0.14975517140232525
+              ]
+            },
+            "8w_depression_mae": {
+              "point": -0.2690080348709629,
+              "ci": [
+                -0.49677547537634176,
+                -0.10693345446358336
+              ]
+            },
+            "8w_depression_auroc": {
+              "point": 0.324699305340978,
+              "ci": [
+                0.19232660792826656,
+                0.40325383619535465
+              ]
+            },
+            "8w_depression_auprc": {
+              "point": 0.42544390439816754,
+              "ci": [
+                0.12115649983638298,
+                0.5954494004540029
+              ]
+            },
+            "8w_depression_onset_auroc": {
+              "point": 0.22639054779380785,
+              "ci": [
+                0.13101086252560934,
+                0.2960851843245104
+              ]
+            },
+            "8w_depression_onset_auprc": {
+              "point": 0.16964964394705612,
+              "ci": [
+                0.08588153452195653,
+                0.28215157337556734
+              ]
+            },
+            "8w_anxiety_mae": {
+              "point": -0.19569589311976243,
+              "ci": [
+                -0.37521412558296796,
+                -0.05554868973717419
+              ]
+            },
+            "8w_anxiety_auroc": {
+              "point": 0.28184210463160064,
+              "ci": [
+                0.13512978247361054,
+                0.3704122843878407
+              ]
+            },
+            "8w_anxiety_auprc": {
+              "point": 0.357765095944679,
+              "ci": [
+                0.06856992143869645,
+                0.5433625983267785
+              ]
+            },
+            "8w_anxiety_onset_auroc": {
+              "point": 0.1679142699550863,
+              "ci": [
+                0.08485122266098234,
+                0.24100573078948628
+              ]
+            },
+            "8w_anxiety_onset_auprc": {
+              "point": 0.10722677646308257,
+              "ci": [
+                0.047489637870331496,
+                0.1789865628967801
+              ]
+            },
+            "8w_mae_avg": {
+              "point": -0.23235196399536262,
+              "ci": [
+                -0.4304931312167499,
+                -0.08322722153335083
+              ]
+            }
+          }
+        }
+      },
+      "decision": {
+        "ode_better_at_weeks": [],
+        "ode_worse_at_weeks": [],
+        "ode_helps": false
+      },
+      "per_seed": {
+        "grudt": {
+          "1w_mae_avg": {
+            "mean": 0.769637525801137,
+            "sd": 0.014477554656472815,
+            "per_seed": [
+              0.7491106544681185,
+              0.79001761847757,
+              0.7703398783055861,
+              0.7700843425314935,
+              0.7686351352229169
+            ]
+          },
+          "2w_mae_avg": {
+            "mean": 0.8112971583205466,
+            "sd": 0.014520578293294699,
+            "per_seed": [
+              0.7918188078845971,
+              0.8328004953470276,
+              0.8110068627225984,
+              0.8104418326549501,
+              0.8104177929935598
+            ]
+          },
+          "4w_mae_avg": {
+            "mean": 0.8854201834624332,
+            "sd": 0.013881034311942582,
+            "per_seed": [
+              0.8685705599741077,
+              0.9072075757612583,
+              0.8828878171318344,
+              0.8830287182386392,
+              0.8854062462063268
+            ]
+          },
+          "8w_mae_avg": {
+            "mean": 0.9669678887325709,
+            "sd": 0.012673248156348528,
+            "per_seed": [
+              0.9534259669767535,
+              0.9876361632375384,
+              0.9623838654515406,
+              0.9637424120386474,
+              0.9676510359583744
+            ]
+          }
+        },
+        "odernn": {
+          "1w_mae_avg": {
+            "mean": 0.7724008456793288,
+            "sd": 0.022015384014728443,
+            "per_seed": [
+              0.7483474343883585,
+              0.7662935024956512,
+              0.7685738471499908,
+              0.7702817331045904,
+              0.8085077112580533
+            ]
+          },
+          "2w_mae_avg": {
+            "mean": 0.8109212645616152,
+            "sd": 0.0230356244603711,
+            "per_seed": [
+              0.7861717662853365,
+              0.8049344854974005,
+              0.8078685768651944,
+              0.8066731974783685,
+              0.8489582966817755
+            ]
+          },
+          "4w_mae_avg": {
+            "mean": 0.8847236883443387,
+            "sd": 0.022022351210788344,
+            "per_seed": [
+              0.8611166648592219,
+              0.8803875511882335,
+              0.8815878876834269,
+              0.8793938373752128,
+              0.9211325006155975
+            ]
+          },
+          "8w_mae_avg": {
+            "mean": 0.9661961592612961,
+            "sd": 0.018738229943660797,
+            "per_seed": [
+              0.9477804075164271,
+              0.9665858697246583,
+              0.9635150946975901,
+              0.9560117834217936,
+              0.9970876409460118
+            ]
+          }
+        }
+      },
+      "persistence_check": "persistence and mean baselines vs baselines_test.json: max difference 1.48e-07"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "rule": "pre-registered 2026-10-22: lowest mean val MAE over both models; ties within 0.005 -> 1e-3",
+  "scores": {
+    "1e-3": {
+      "mean_val_mae": 0.7137897498905659,
+      "per_model": {
+        "grudt": 0.7101962268352509,
+        "odernn": 0.7173832729458809
+      }
+    },
+    "3e-4": {
+      "mean_val_mae": 0.7316525354981422,
+      "per_model": {
+        "grudt": 0.742060124874115,
+        "odernn": 0.7212449461221695
+      }
+    }
+  },
+  "chosen_lr": "1e-3",
+  "nan_fix_needed": false
+}

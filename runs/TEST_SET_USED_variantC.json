@@ -1,0 +1,43 @@
+{
+  "time": "2026-10-22T11:25:31",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "versions": [
+    "B"
+  ],
+  "runs": "runs/variantC/final",
+  "argv": [
+    "evaluate_forecast.py",
+    "--control",
+    "grudt",
+    "--treatment",
+    "odernn",
+    "--versions",
+    "B",
+    "--runs",
+    "runs/variantC/final",
+    "--ref_runs",
+    "runs/final",
+    "--ref_models",
+    "noode",
+    "ode",
+    "--split",
+    "test",
+    "--final",
+    "--seeds",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "--lock",
+    "runs/TEST_SET_USED_variantC.json",
+    "--out",
+    "runs/variantC/final/eval_test"
+  ]
+}

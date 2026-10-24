@@ -1,0 +1,31 @@
+{
+  "time": "2026-10-22T09:06:46",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "versions": [
+    "A",
+    "B"
+  ],
+  "runs": "runs/final",
+  "argv": [
+    "evaluate_forecast.py",
+    "--runs",
+    "runs/final",
+    "--split",
+    "test",
+    "--final",
+    "--seeds",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "--out",
+    "runs/final/eval_test"
+  ]
+}
